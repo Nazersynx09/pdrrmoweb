@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Phone,
@@ -23,28 +23,51 @@ interface UsefulLink {
   label: string;
   sub: string;
   color: string;
+  href: string;
 }
+
+const formatPhilippineTime = (date: Date) =>
+  new Intl.DateTimeFormat("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Manila",
+  }).format(date);
 
 const Home: NextPage = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
+  const [phTime, setPhTime] = useState<string>(() => formatPhilippineTime(new Date()));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhTime(formatPhilippineTime(new Date()));
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const slides: Slide[] = [
     { title: "EARTHQUAKE PREPAREDNESS", type: "Earthquake info guide" },
     { title: "FLOOD SAFETY", type: "Water level advisory" },
   ];
 
-  const issuances: string[] = [
-    "NDRRMC Memorandum No. 12, s. 2024",
-    "NDRRMC Memorandum No. 08, s. 2024",
-    "NDRRMC Memorandum No. 01, s. 2024",
-    "PDRRMC Memorandum No. 155, s. 2023",
+  const issuances: { text: string; href: string }[] = [
+    { text: "NDRRMC Memorandum No. 12, s. 2024", href: "#" },
+    { text: "NDRRMC Memorandum No. 58, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC-MEMO-58-s.-2026-Raising-of-the-NDRRMOC-Alert-Status-to-BLUE-ICOW-The-Observance-of-the-Holy-Week-SEMANA-SANTA-2026.pdf" },
+    { text: "NDRRMC Memorandum No. 62, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC_Memorandum_No_62_s_2026.pdf" },
+    { text: "PDRRMC Memorandum No. 15, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/02/NDRRMC_Memorandum_No_15_s_2026.pdf" },
   ];
 
   const usefulLinks: UsefulLink[] = [
-    { label: "PAGASA", sub: "Weather Forecast", color: "#002E5D" },
-    { label: "DOST-PHIVOLCS", sub: "Fault Finder", color: "#002E5D" },
-    { label: "DOST-PHIVOLCS", sub: "Earthquake Info", color: "#002E5D" },
+    { label: "PAGASA", sub: "Weather Forecast", color: "#002E5D", href: "https://www.pagasa.dost.gov.ph/" },
+    { label: "DOST-PHIVOLCS", sub: "Fault Finder", color: "#002E5D", href: "https://www.phivolcs.dost.gov.ph/" },
+    { label: "DOST-PHIVOLCS", sub: "Earthquake Info", color: "#002E5D", href: "https://www.phivolcs.dost.gov.ph/" },
   ];
+
+  const panahonMapUrl = "https://panahon.gov.ph/?region=iloilo";
 
   const handleNextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const handlePrevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
@@ -55,15 +78,15 @@ const Home: NextPage = () => {
       <nav className="bg-[#002E5D] text-white sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center p-1">
+            
               <Image
                 src="/PDRRMO Logo.png"
                 alt="Logo"
-                width={100}
-                height={100}
+                width={40}
+                height={40}
                 className="object-contain"
               />
-            </div>
+            
             <span className="font-bold tracking-tight hidden md:block">PDRRMO ILOILO</span>
           </div>
 
@@ -97,11 +120,11 @@ const Home: NextPage = () => {
 
       {/* --- CAROUSEL --- */}
       <section className="py-12 bg-white border-y border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 relative">
+        <div className="max-w-6xl mx-auto px-4 relative">
           <div className="bg-[#F58220] text-white px-6 py-2 rounded-t-lg inline-block text-xl font-bold uppercase tracking-widest">
             {slides[currentSlide].title}
           </div>
-          <div className="border-4 border-[#F58220] rounded-b-lg rounded-tr-lg overflow-hidden shadow-xl aspect-video relative group bg-gray-100 flex items-center justify-center">
+          <div className="border-3 border-[#F58220] rounded-b-lg rounded-tr-lg overflow-hidden shadow-xl aspect-video relative group bg-gray-100 flex items-center justify-center">
             <div className="text-center p-8">
               <p className="text-gray-400 italic">Preparedness Infographic Illustration goes here</p>
               <p className="text-xs mt-2 text-gray-500 underline uppercase tracking-widest cursor-pointer">View PDF Guide</p>
@@ -134,31 +157,40 @@ const Home: NextPage = () => {
             <div>
               <h3 className="text-sm font-bold text-[#002E5D] uppercase tracking-tighter mb-4">Issuances</h3>
               <div className="space-y-2">
-                {issuances.map((text, i) => (
-                  <a key={i} href="#" className="flex items-center justify-between p-3 border border-gray-200 rounded hover:border-[#F58220] group transition">
-                    <span className="text-sm text-[#002E5D] underline font-medium group-hover:text-[#F58220]">{text}</span>
+                {issuances.map((issuance, i) => (
+                  <a
+                    key={i}
+                    href={issuance.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded hover:border-[#F58220] group transition"
+                  >
+                    <span className="text-sm text-[#002E5D] underline font-medium group-hover:text-[#F58220]">{issuance.text}</span>
                     <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#F58220]" />
                   </a>
                 ))}
               </div>
             </div>
 
+            {/* --- Activity Higlights --- */}
+
             <div>
               <h3 className="text-sm font-bold text-[#002E5D] uppercase tracking-tighter mb-4">Activities</h3>
               <div className="rounded-lg overflow-hidden border-4 border-gray-100 shadow-lg">
                 <Image
-                  src="/PDRRMO Calling Card.png"
+                  src="/GADMeeting.jpg"
                   alt="Recent Activities"
                   width={800}
                   height={192}
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4 bg-white">
-                  <p className="text-xs font-semibold text-gray-500 uppercase">Field Operations - Jan 2024</p>
-                  <p className="text-sm mt-1 font-bold text-[#002E5D]">Iloilo Rescue Team performing routine safety inspection at the Provincial Capital.</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase">Hotel del Rio - March 26, 2026</p>
+                  <p className="text-sm mt-1 font-bold text-[#002E5D]">𝐒𝐓𝐑𝐄𝐍𝐆𝐓𝐇𝐄𝐍𝐈𝐍𝐆 𝐏𝐑𝐎𝐓𝐄𝐂𝐓𝐈𝐎𝐍 𝐅𝐎𝐑 𝐖𝐎𝐌𝐄𝐍 𝐀𝐍𝐃 𝐂𝐇𝐈𝐋𝐃𝐑𝐄𝐍</p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -170,10 +202,16 @@ const Home: NextPage = () => {
           <div className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col">
             <div className="bg-[#F58220] p-3 text-white text-center text-xs font-bold flex items-center justify-center gap-2">
               <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-              AS OF JANUARY 25, 2024 - 5:15 PM
+              AS OF {phTime}
             </div>
             <div className="flex-1 flex items-center justify-center text-gray-400 italic text-sm p-10 text-center">
-              <p>No active weather systems or disaster alerts in the Iloilo area as of this report.</p>
+              <iframe
+              src={panahonMapUrl}
+              title="Panahon weather map"
+              className="w-full h-full"
+              loading="lazy"
+              style={{ minHeight: 400, minWidth: 650 }}
+            />
             </div>
           </div>
         </div>
@@ -185,7 +223,13 @@ const Home: NextPage = () => {
           <h2 className="text-center text-2xl font-black text-[#F58220] uppercase mb-10">Useful Links</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {usefulLinks.map((link, i) => (
-              <a key={i} href="#" className="flex flex-col shadow-lg rounded-lg overflow-hidden group hover:-translate-y-1 transition duration-300">
+              <a
+                key={i}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="flex flex-col shadow-lg rounded-lg overflow-hidden group hover:-translate-y-1 transition duration-300"
+              >
                 <div className="bg-white p-4 flex items-center justify-center h-16">
                   <div className="flex gap-2 items-center">
                     <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center text-[#002E5D] font-bold">{link.label[0]}</div>
@@ -248,7 +292,24 @@ const Home: NextPage = () => {
             <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2">
               <FaFacebookF className="w-4 h-4" /> Follow Us
             </h4>
-            <p className="text-xs text-gray-600 font-bold">Operation Control PDRRMO Iloilo</p>
+            <div className="space-y-2">
+              <a
+                href="https://www.facebook.com/Heman201"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-xs text-gray-600 font-bold underline"
+              >
+                Operation Center PDRRMO Iloilo
+              </a>
+              <a
+                href="https://www.facebook.com/iloilopdrrmo"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-xs text-gray-600 font-bold underline"
+              >
+                Provincial Disaster Risk Reduction and Management Office - Iloilo
+              </a>
+            </div>
             <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2 mt-4">
               
               <Globe className="w-4 h-4" /> Portals
