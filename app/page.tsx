@@ -331,7 +331,14 @@ const Home: NextPage = () => {
               
               <Globe className="w-4 h-4" /> Portals
             </h4>
-            <p className="text-xs text-gray-600 font-bold underline">Iloilo.gov.ph</p>
+            <a
+                href="https://iloilo.gov.ph/"
+                target="_blank"
+                rel="noreferrer"
+                className="block text-xs text-gray-600 font-bold underline"
+              >
+                Iloilo.gov.ph
+              </a>
           </div>
         </div>
 
