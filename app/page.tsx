@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
-  Phone,
-  Mail,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -13,6 +11,8 @@ import {
 } from "lucide-react";
 import { FaFacebookF } from "react-icons/fa";
 import type { NextPage } from "next";
+import Link from "next/link";
+
 
 interface Slide {
   title: string;
@@ -91,12 +91,29 @@ const Home: NextPage = () => {
           </div>
 
           <div className="hidden lg:flex items-center gap-6 text-sm font-medium uppercase tracking-wide">
-            <a href="/" className="hover:text-orange-400 transition">Home</a>
-            <a href="/components/About PDRRMO" className="hover:text-orange-400 transition">About PDRRMO</a>
-            <a href="/components/About PDRRMC" className="hover:text-orange-400 transition">About PDRRMC</a>
-            <a href="/components/Programs and Services" className="hover:text-orange-400 transition">Programs and Services</a>
-            <a href="/components/Resources" className="hover:text-orange-400 transition">Resources</a>
-            <a href="/components/Operation Center" className="hover:text-orange-400 transition">Operation Center</a>
+             <Link href="/" className="hover:text-orange-400 transition">
+              Home
+            </Link>
+
+            <Link href="/about-pdrrmo" className="hover:text-orange-400 transition">
+              About PDRRMO
+            </Link>
+
+            <Link href="/about-pdrrmc" className="hover:text-orange-400 transition">
+              About PDRRMC
+            </Link>
+
+            <Link href="/programs-services" className="hover:text-orange-400 transition">
+              Programs and Services
+            </Link>
+
+            <Link href="/resources" className="hover:text-orange-400 transition">
+              Resources
+            </Link>
+
+            <Link href="/operation-center" className="hover:text-orange-400 transition">
+              Operation Center
+            </Link>
           </div>
 
           <button className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition">
