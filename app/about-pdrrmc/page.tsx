@@ -33,9 +33,9 @@ export default function AboutPDRRMC() {
             <Link href="/operation-center" className="hover:text-orange-400 transition">Operation Center</Link>
           </div>
 
-          <button className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition">
+          <Link href="/emergency" className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition inline-block text-center">
             Emergency Contact
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -185,7 +185,7 @@ export default function AboutPDRRMC() {
               <span className="text-lg">Name</span>
               <span className="text-left text-lg">Office</span>
             </div>
-            
+
             <div className="divide-y divide-slate-200">
               {[
                 { name: "John Doe", office: "Administrative Office" },

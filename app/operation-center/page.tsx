@@ -54,9 +54,9 @@ export default function OperationCenter() {
             </Link>
           </div>
 
-          <button className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition">
+          <Link href="/emergency" className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition inline-block text-center">
             Emergency Contact
-          </button>
+          </Link>
         </div>
       </nav>
 
