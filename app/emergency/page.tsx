@@ -210,28 +210,9 @@ export default function ContactDetailsPage() {
   const current = tabs.find((t) => t.key === activeTab)!;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 mt-10">
 
       {/* NAV */}
-      <nav className="bg-[#002E5D] text-white sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image src="/PDRRMO Logo.png" alt="Logo" width={40} height={40} className="object-contain" />
-            <span className="font-bold tracking-tight hidden md:block">PDRRMO ILOILO</span>
-          </div>
-          <div className="hidden lg:flex items-center gap-6 text-sm font-medium uppercase tracking-wide">
-            <Link href="/" className="hover:text-orange-400 transition">Home</Link>
-            <Link href="/about-pdrrmo" className="hover:text-orange-400 transition">About PDRRMO</Link>
-            <Link href="/about-pdrrmc" className="hover:text-orange-400 transition">About PDRRMC</Link>
-            <Link href="/programs-services" className="hover:text-orange-400 transition">Programs and Services</Link>
-            <Link href="/resources" className="hover:text-orange-400 transition">Resources</Link>
-            <Link href="/operation-center" className="hover:text-orange-400 transition">Operation Center</Link>
-          </div>
-          <button className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition">
-            Emergency Contact
-          </button>
-        </div>
-      </nav>
 
       {/* MAIN */}
       <main className="max-w-4xl mx-auto px-4 py-10">

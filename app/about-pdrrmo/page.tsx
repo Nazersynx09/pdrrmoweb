@@ -54,10 +54,10 @@ export default function AboutPDRRMO() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 mt-10">
 
       {/* --- TOP NAVIGATION --- */}
-      <nav className="bg-[#002E5D] text-white sticky top-0 z-50 shadow-md">
+      {/* <nav className="bg-[#002E5D] text-white sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image
@@ -83,7 +83,7 @@ export default function AboutPDRRMO() {
             Emergency Contact
           </Link>
         </div>
-      </nav>
+      </nav> */}
 
       {/* --- MAIN CONTENT --- */}
       <main className="max-w-5xl mx-auto px-4 py-10">
