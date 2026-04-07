@@ -178,7 +178,7 @@ export default function AboutPDRRMC() {
       </main>
 
         {/* PDRRMC Composition Table */}
-          <section className="max-w-2xl mx-auto px-8 mb-14">
+          <section className="max-w-5xl mx-auto px-8 mb-14">
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 
             <div className="grid grid-cols-[2fr_1fr] gap-2 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 border-b border-slate-200">

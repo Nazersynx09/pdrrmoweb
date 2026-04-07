@@ -8,10 +8,16 @@ import {
   ExternalLink,
   MapPin,
   Globe,
+  Phone,
+  Mail,
+  LocateIcon,
+  Menu,
+  X,
 } from "lucide-react";
 import { FaFacebookF } from "react-icons/fa";
 import type { NextPage } from "next";
 import Link from "next/link";
+import { useRef, useCallback } from "react";
 
 
 interface Slide {
@@ -40,6 +46,7 @@ const formatPhilippineTime = (date: Date) =>
 const Home: NextPage = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [phTime, setPhTime] = useState<string>(() => formatPhilippineTime(new Date()));
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,66 +79,195 @@ const Home: NextPage = () => {
   const handleNextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const handlePrevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
+  const l2 = useRef<SVGSVGElement>(null);
+  const l3 = useRef<SVGSVGElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    if (l2.current) l2.current.style.transform = `translate(${x * -18}px, ${y * -10}px)`;
+    if (l3.current) l3.current.style.transform = `translate(${x * -30}px, ${y * -16}px)`;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    [l2, l3].forEach(ref => {
+      if (ref.current) {
+        ref.current.style.transition = "transform 0.8s ease";
+        ref.current.style.transform = "translate(0,0)";
+        setTimeout(() => { if (ref.current) ref.current.style.transition = ""; }, 800);
+      }
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
       {/* --- TOP NAVIGATION --- */}
-      <nav className="bg-[#002E5D] text-white sticky top-0 z-50 shadow-md">
+      <nav className="bg-[#002E5D] text-white fixed top-0 w-full z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            
-              <Image
-                src="/PDRRMO Logo.png"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            
-            <span className="font-bold tracking-tight hidden md:block">PDRRMO ILOILO</span>
+
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <Image src="/PDRRMO Logo.png" alt="Logo" width={40} height={40} className="object-contain" />
+            <span className="font-bold tracking-tight hidden md:block text-sm">PDRRMO ILOILO</span>
           </div>
 
-          <div className="hidden lg:flex items-center gap-6 text-sm font-medium uppercase tracking-wide">
-             <Link href="/" className="hover:text-orange-400 transition">
-              Home
-            </Link>
-
-            <Link href="/about-pdrrmo" className="hover:text-orange-400 transition">
-              About PDRRMO
-            </Link>
-
-            <Link href="/about-pdrrmc" className="hover:text-orange-400 transition">
-              About PDRRMC
-            </Link>
-
-            <Link href="/programs-services" className="hover:text-orange-400 transition">
-              Programs and Services
-            </Link>
-
-            <Link href="/resources" className="hover:text-orange-400 transition">
-              Resources
-            </Link>
-
-            <Link href="/operation-center" className="hover:text-orange-400 transition">
-              Operation Center
-            </Link>
+          {/* Desktop nav links */}
+          <div className="hidden lg:flex items-center gap-6 text-xs font-semibold uppercase tracking-wide">
+            <Link href="/" className="hover:text-orange-400 transition">Home</Link>
+            <Link href="/about-pdrrmo" className="hover:text-orange-400 transition">About PDRRMO</Link>
+            <Link href="/about-pdrrmc" className="hover:text-orange-400 transition">About PDRRMC</Link>
+            <Link href="/programs-services" className="hover:text-orange-400 transition">Programs and Services</Link>
+            <Link href="/resources" className="hover:text-orange-400 transition">Resources</Link>
+            <Link href="/operation-center" className="hover:text-orange-400 transition">Operation Center</Link>
           </div>
 
-          <Link href="/emergency" className="bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition inline-block text-center">
-            Emergency Contact
-          </Link>
+          {/* Right side: PH time + Emergency + Hamburger */}
+          <div className="flex items-center gap-3">
+            {/* PH Time — hidden on mobile, shown on desktop */}
+            <div className="hidden lg:flex items-center gap-2 bg-white/10 border border-white/20 rounded-md px-3 py-1.5">
+              <span className="w-2 h-2 bg-green-400 rounded-full shrink-0" />
+              <div>
+                <p className="text-[9px] uppercase tracking-widest text-white/50 leading-none">PH Time</p>
+                <p className="text-[11px] font-semibold text-white leading-tight">{phTime}</p>
+              </div>
+            </div>
+
+            <Link
+              href="/emergency"
+              className="hidden lg:inline-block bg-[#F58220] hover:bg-orange-600 px-4 py-2 rounded font-bold text-xs uppercase transition text-center"
+            >
+              Emergency Contact
+            </Link>
+
+            {/* Hamburger — mobile only */}
+            <button
+              className="lg:hidden p-2 text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="h-auto w-auto" /> : <Menu className="h-auto w-auto" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden bg-[#001f45] border-t border-white/10 px-4 py-4">
+            <div className="flex flex-col divide-y divide-white/10">
+              {[
+                ["Home", "/"],
+                ["About PDRRMO", "/about-pdrrmo"],
+                ["About PDRRMC", "/about-pdrrmc"],
+                ["Programs and Services", "/programs-services"],
+                ["Resources", "/resources"],
+                ["Operation Center", "/operation-center"],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="py-3 text-xs font-semibold uppercase tracking-wide text-white/85 hover:text-orange-400 transition"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            {/* PH Time in mobile menu */}
+            <div className="mt-4 flex items-center gap-2 text-white/60 text-xs py-2 border-t border-white/10">
+              <span className="w-2 h-2 bg-green-400 rounded-full shrink-0" />
+              PH Time: <span className="font-semibold text-white">{phTime}</span>
+            </div>
+
+            <Link
+              href="/emergency"
+              onClick={() => setIsMenuOpen(false)}
+              className="mt-3 block bg-[#F58220] hover:bg-orange-600 text-white text-center py-2.5 rounded font-bold text-xs uppercase transition"
+            >
+              Emergency Contact
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* --- HERO BANNER --- */}
-      <section className="relative flex h-[400px] md:h-[550px] w-full flex-col items-center justify-center overflow-hidden bg-[#002b5c]">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/banner%20final.svg"
-            alt="PDRRMO Banner"
-            fill
-            style={{ objectFit: "contain" }}
-            priority
-          />
+      <section
+        className="relative overflow-hidden bg-[#001f45]"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
+
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute right-8 top-8 h-24 w-1 rounded-full bg-white/20" />
+          <div className="absolute right-16 top-20 h-16 w-1 rounded-full bg-white/15" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 lg:px-8 lg:py-24">
+          <div className="grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-center">
+            <div className="flex items-center justify-center lg:justify-start">
+              <div className="flex h-60 w-60 items-center justify-center">
+                <Image
+                  src="/PDRRMO Logo.png"
+                  alt="PDRRMO Logo"
+                  width={800}
+                  height={800}
+                  className="object-contain"
+                />
+              </div>
+            </div>
+
+            <div className="text-white">
+              <p className="text-xs uppercase tracking-[0.35em] text-orange-300 mb-4">
+                ILOILO PROVINCIAL GOVERNMENT
+              </p>
+              <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+                PROVINCIAL DISASTER RISK
+                <span className="block">REDUCTION & MANAGEMENT</span>
+              </h1>
+              <p className="mt-6 text-sm uppercase tracking-[0.35em] text-slate-200 sm:text-base">
+                PREPARED. RESILIENT. SAFE.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
+              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
+                <Phone className="h-4 w-4" /> HOTLINE
+              </div>
+              <p className="mt-3 font-semibold text-lg">(033) 328-7920 / 328-7900</p>
+            </div>
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
+              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
+                <Mail className="h-4 w-4" /> EMAIL
+              </div>
+              <p className="mt-3 font-semibold text-lg">pdrrmo_iloilo@yahoo.com.ph</p>
+              <p className="mt-3 font-semibold text-lg">pdrrmo@iloilo.gov.ph</p>
+            </div>
+          </div>
+          <div className="mt-12 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
+                <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
+                  <FaFacebookF className="h-4 w-4" /> FACEBOOK
+                </div>
+                <div className="flex flex-col gap-1">
+                <a href="https://www.facebook.com/Heman201" target="_blank" rel="noreferrer noopener" className="mt-3 font-semibold text-lg underline">
+                  Operation Center PDRRMO Iloilo
+                </a>
+                <a href="https://www.facebook.com/iloilopdrrmo" target="_blank" rel="noreferrer noopener" className="mt-3 font-semibold text-lg underline">
+                  Provincial Disaster Risk Reduction and Management Office - Iloilo
+                </a>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
+                <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
+                  <LocateIcon className="h-4 w-4" /> ADDRESS
+                </div>
+                <p className="mt-3 font-semibold text-lg">3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City</p>
+              </div>
+          </div>
         </div>
       </section>
 
@@ -313,7 +449,7 @@ const Home: NextPage = () => {
               <a
                 href="https://www.facebook.com/Heman201"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="block text-xs text-gray-600 font-bold underline"
               >
                 Operation Center PDRRMO Iloilo
@@ -321,7 +457,7 @@ const Home: NextPage = () => {
               <a
                 href="https://www.facebook.com/iloilopdrrmo"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="block text-xs text-gray-600 font-bold underline"
               >
                 Provincial Disaster Risk Reduction and Management Office - Iloilo
@@ -334,7 +470,7 @@ const Home: NextPage = () => {
             <a
                 href="https://iloilo.gov.ph/"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="block text-xs text-gray-600 font-bold underline"
               >
                 Iloilo.gov.ph
