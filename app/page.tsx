@@ -123,7 +123,7 @@ const Home: NextPage = () => {
       </nav>
 
       {/* --- HERO BANNER --- */}
-      <section className="relative flex h-[400px] md:h-[550px] w-full flex-col items-center justify-center overflow-hidden bg-[#002b5c]">
+      <section className="relative flex h-100 md:h-137.5 w-full flex-col items-center justify-center overflow-hidden bg-[#002b5c]">
         <div className="absolute inset-0 z-0">
           <Image
             src="/banner%20final.svg"
