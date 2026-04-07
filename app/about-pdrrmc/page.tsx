@@ -246,7 +246,7 @@ export default function AboutPDRRMC() {
               <a
                 href="https://www.facebook.com/Heman201"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="block text-xs text-gray-600 font-bold underline"
               >
                 Operation Center PDRRMO Iloilo
@@ -254,7 +254,7 @@ export default function AboutPDRRMC() {
               <a
                 href="https://www.facebook.com/iloilopdrrmo"
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="block text-xs text-gray-600 font-bold underline"
               >
                 Provincial Disaster Risk Reduction and Management Office - Iloilo

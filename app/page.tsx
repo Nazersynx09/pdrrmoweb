@@ -233,13 +233,13 @@ const Home: NextPage = () => {
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
+            <div className="rounded-3xl border border-orange/100 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
               <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
                 <Phone className="h-4 w-4" /> HOTLINE
               </div>
               <p className="mt-3 font-semibold text-lg">(033) 328-7920 / 328-7900</p>
             </div>
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
+            <div className="rounded-3xl border border-orange/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
               <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
                 <Mail className="h-4 w-4" /> EMAIL
               </div>
@@ -247,21 +247,8 @@ const Home: NextPage = () => {
               <p className="mt-3 font-semibold text-lg">pdrrmo@iloilo.gov.ph</p>
             </div>
           </div>
-          <div className="mt-12 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
-                <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
-                  <FaFacebookF className="h-4 w-4" /> FACEBOOK
-                </div>
-                <div className="flex flex-col gap-1">
-                <a href="https://www.facebook.com/Heman201" target="_blank" rel="noreferrer noopener" className="mt-3 font-semibold text-lg underline">
-                  Operation Center PDRRMO Iloilo
-                </a>
-                <a href="https://www.facebook.com/iloilopdrrmo" target="_blank" rel="noreferrer noopener" className="mt-3 font-semibold text-lg underline">
-                  Provincial Disaster Risk Reduction and Management Office - Iloilo
-                </a>
-                </div>
-              </div>
-              <div className="rounded-3xl border border-white/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
+          <div className="mt-12 grid gap-3 sm:grid-cols-1">
+              <div className=" p-4 text-white">
                 <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
                   <LocateIcon className="h-4 w-4" /> ADDRESS
                 </div>

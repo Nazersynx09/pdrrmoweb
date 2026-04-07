@@ -379,8 +379,8 @@ export default function ResourcesPage() {
               <FaFacebookF className="w-4 h-4" /> Follow Us
             </h4>
             <div className="space-y-2">
-              <a href="https://www.facebook.com/Heman201"   target="_blank" rel="noreferrer" className="block text-xs text-gray-600 font-bold underline">Operation Center PDRRMO Iloilo</a>
-              <a href="https://www.facebook.com/iloilopdrrmo" target="_blank" rel="noreferrer" className="block text-xs text-gray-600 font-bold underline">Provincial Disaster Risk Reduction and Management Office - Iloilo</a>
+              <a href="https://www.facebook.com/Heman201"   target="_blank" rel="noreferrer noopener" className="block text-xs text-gray-600 font-bold underline">Operation Center PDRRMO Iloilo</a>
+              <a href="https://www.facebook.com/iloilopdrrmo" target="_blank" rel="noreferrer noopener" className="block text-xs text-gray-600 font-bold underline">Provincial Disaster Risk Reduction and Management Office - Iloilo</a>
             </div>
             <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2 mt-4">
               <Globe className="w-4 h-4" /> Portals
