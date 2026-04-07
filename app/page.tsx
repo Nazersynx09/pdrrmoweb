@@ -197,7 +197,7 @@ const Home: NextPage = () => {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
+        <div className="absolute inset-0 bg-linear-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
 
         <div className="absolute inset-0 opacity-40">
           <div className="absolute right-8 top-8 h-24 w-1 rounded-full bg-white/20" />

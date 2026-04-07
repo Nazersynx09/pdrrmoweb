@@ -299,18 +299,22 @@ export default function AboutPDRRMO() {
           {/* Scrollable image container */}
           <div className="w-full h-full overflow-auto flex items-center justify-center p-8">
             <div
-              className={`touch-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+              className={`draggable-image touch-none ${
+                isDragging ? "cursor-grabbing dragging" : "cursor-grab"
+              }`}
               onPointerDown={handleDragStart}
               onPointerMove={handleDragMove}
               onPointerUp={handleDragEnd}
               onPointerCancel={handleDragEnd}
               onPointerLeave={handleDragEnd}
               onClick={(e) => e.stopPropagation()}
-              style={{
-                transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                transformOrigin: "center center",
-                transition: dragStart ? "none" : "transform 0.2s ease",
-              }}
+              style={
+                {
+                  "--x": `${offset.x}px`,
+                  "--y": `${offset.y}px`,
+                  "--scale": scale,
+                } as React.CSSProperties
+              }
             >
               <Image
                 src="/Orgstruct.png"
