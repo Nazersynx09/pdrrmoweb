@@ -197,14 +197,14 @@ const Home: NextPage = () => {
       </section>
 
       {/* --- UPDATES GRID --- */}
-      <section className="py-12 max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-12">
+      <section className="py-12 max-w-7xl mx-auto px-2 grid md:grid-cols-2 gap-10">
         {/* Latest Updates */}
         <div>
           <h2 className="text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
             <span className="w-2 h-8 bg-[#F58220] block"></span>Latest Updates
           </h2>
 
-          <div className="space-y-8">
+          <div className="space-y-8 max-w-7xl mx-auto px-4">
             <div>
               <h3 className="text-sm font-bold text-[#002E5D] uppercase tracking-tighter mb-4">Issuances</h3>
               <div className="space-y-2">
