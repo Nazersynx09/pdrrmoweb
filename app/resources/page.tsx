@@ -9,13 +9,20 @@ import { useState } from "react";
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const hazardMaps = [
-  { id: 1, label: "Flood Hazard Map", src: "/hazard-map-1.jpg", desc: "Municipal flood risk zones across Iloilo Province" },
-  { id: 2, label: "Storm Surge Map",  src: "/hazard-map-2.jpg", desc: "Coastal storm surge susceptibility areas" },
-  { id: 3, label: "Landslide Map",    src: "/hazard-map-3.jpg", desc: "Landslide-prone zones and evacuation routes" },
+  { id: 1, label: "Flood Hazard Map", src: "/Flooding Hazard.tif", desc: "Flood risk zones across Iloilo Province" },
+  { id: 2, label: "Storm Surge Map",  src: "/Storm Surge Hazard.tif", desc: "Coastal storm surge susceptibility areas" },
+  { id: 3, label: "Landslide Map",    src: "/Rain Induced Landslide.tif", desc: "Landslide-prone zones and evacuation routes" },
+  { id: 4, label: "Tsunami Hazard Map", src: "/Tsunami.tif", desc: "Tsunami risk zones across Iloilo Province" },
+  { id: 5, label: "EIL West Panay Fault Map (S.2)",  src: "/EIL Scenario 2 West Panay Fault.tif", desc: "EIL risk zones across Iloilo Province (S.2)" },
+  { id: 6, label: "EIL Negros Trench (S.6)",    src: "/EIL Scenario 6 Negros Trench.tif", desc: "EIL risk zones across Iloilo Province (S.6)" },
+  { id: 7, label: "Groundshaking West Panay Fault Map (S.2)",  src: "/Groundshaking Scenario 2 West Panay.tif", desc: "Groundshaking risk zones across Iloilo Province (S.2)" },
+  { id: 8, label: "Groundshaking Negros Trench (S.6)",    src: "/Groundshaking Scenario 6 Negros Trench.tif", desc: "Groundshaking risk zones across Iloilo Province (S.6)" },
+   { id: 9, label: "Liquefaction West Panay Fault Map (S.2)",  src: "/Liquefaction Scenario 2 West Panay.tif", desc: "Liquefaction risk zones across Iloilo Province (S.2)" },
+  { id: 10, label: "Liquefaction Negros Trench (S.6)",    src: "/Liquefaction Scenario 6 Negros Trench.tif", desc: "Liquefaction risk zones across Iloilo Province (S.6)" },
 ];
 
 const issuances = [
-  { label: "NDRRMC Memorandum No. 14, s.2025", href: "#", date: "2025" },
+  { label: "NDRRMC Memorandum No. 14, s.2025", href: "./Super Typhoon TTEX.pdf", date: "2025" },
   { label: "NDRRMC Memorandum No. 10, s.2025", href: "#", date: "2025" },
   { label: "NDRRMC Memorandum No. 30, s.2025", href: "#", date: "2025" },
   { label: "NDRRMC Memorandum No. 31, s.2025", href: "#", date: "2025" },

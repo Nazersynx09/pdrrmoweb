@@ -11,14 +11,10 @@ import {
   Phone,
   Mail,
   LocateIcon,
-  Menu,
-  X,
 } from "lucide-react";
 import { FaFacebookF } from "react-icons/fa";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRef, useCallback } from "react";
-
 
 interface Slide {
   title: string;
@@ -45,14 +41,15 @@ const formatPhilippineTime = (date: Date) =>
 
 const Home: NextPage = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const [phTime, setPhTime] = useState<string>(() => formatPhilippineTime(new Date()));
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [phTime, setPhTime] = useState<string>(() =>
+    formatPhilippineTime(new Date())
+  );
+  const [iframeLoaded, setIframeLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPhTime(formatPhilippineTime(new Date()));
     }, 60_000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -63,150 +60,209 @@ const Home: NextPage = () => {
 
   const issuances: { text: string; href: string }[] = [
     { text: "NDRRMC Memorandum No. 12, s. 2024", href: "#" },
-    { text: "NDRRMC Memorandum No. 58, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC-MEMO-58-s.-2026-Raising-of-the-NDRRMOC-Alert-Status-to-BLUE-ICOW-The-Observance-of-the-Holy-Week-SEMANA-SANTA-2026.pdf" },
-    { text: "NDRRMC Memorandum No. 62, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC_Memorandum_No_62_s_2026.pdf" },
-    { text: "PDRRMC Memorandum No. 15, s. 2026", href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/02/NDRRMC_Memorandum_No_15_s_2026.pdf" },
+    {
+      text: "NDRRMC Memorandum No. 58, s. 2026",
+      href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC-MEMO-58-s.-2026-Raising-of-the-NDRRMOC-Alert-Status-to-BLUE-ICOW-The-Observance-of-the-Holy-Week-SEMANA-SANTA-2026.pdf",
+    },
+    {
+      text: "NDRRMC Memorandum No. 62, s. 2026",
+      href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC_Memorandum_No_62_s_2026.pdf",
+    },
+    {
+      text: "PDRRMC Memorandum No. 15, s. 2026",
+      href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/02/NDRRMC_Memorandum_No_15_s_2026.pdf",
+    },
   ];
 
   const usefulLinks: UsefulLink[] = [
-    { label: "PAGASA", sub: "Weather Forecast", color: "#002E5D", href: "https://www.pagasa.dost.gov.ph/" },
-    { label: "DOST-PHIVOLCS", sub: "Fault Finder", color: "#002E5D", href: "https://www.phivolcs.dost.gov.ph/" },
-    { label: "DOST-PHIVOLCS", sub: "Earthquake Info", color: "#002E5D", href: "https://www.phivolcs.dost.gov.ph/" },
+    {
+      label: "PAGASA",
+      sub: "Weather Forecast",
+      color: "#002E5D",
+      href: "https://www.pagasa.dost.gov.ph/",
+    },
+    {
+      label: "DOST-PHIVOLCS",
+      sub: "Fault Finder",
+      color: "#002E5D",
+      href: "https://www.phivolcs.dost.gov.ph/",
+    },
+    {
+      label: "DOST-PHIVOLCS",
+      sub: "Earthquake Info",
+      color: "#002E5D",
+      href: "https://www.phivolcs.dost.gov.ph/",
+    },
   ];
 
-  const panahonMapUrl = "https://panahon.gov.ph/?region=iloilo";
-
-  const handleNextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
-  const handlePrevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  const handleNextSlide = () =>
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const handlePrevSlide = () =>
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   const l2 = useRef<SVGSVGElement>(null);
   const l3 = useRef<SVGSVGElement>(null);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    if (l2.current) l2.current.style.transform = `translate(${x * -18}px, ${y * -10}px)`;
-    if (l3.current) l3.current.style.transform = `translate(${x * -30}px, ${y * -16}px)`;
-  }, []);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      if (l2.current)
+        l2.current.style.transform = `translate(${x * -18}px, ${y * -10}px)`;
+      if (l3.current)
+        l3.current.style.transform = `translate(${x * -30}px, ${y * -16}px)`;
+    },
+    []
+  );
 
   const handleMouseLeave = useCallback(() => {
-    [l2, l3].forEach(ref => {
+    [l2, l3].forEach((ref) => {
       if (ref.current) {
         ref.current.style.transition = "transform 0.8s ease";
         ref.current.style.transform = "translate(0,0)";
-        setTimeout(() => { if (ref.current) ref.current.style.transition = ""; }, 800);
+        setTimeout(() => {
+          if (ref.current) ref.current.style.transition = "";
+        }, 800);
       }
     });
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
-      {/* --- HERO BANNER --- */}
+
+      {/* ── HERO BANNER ── */}
       <section
         className="relative overflow-hidden bg-[#001f45]"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 bg-linear-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
 
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute right-8 top-8 h-24 w-1 rounded-full bg-white/20" />
-          <div className="absolute right-16 top-20 h-16 w-1 rounded-full bg-white/15" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 lg:px-8 lg:py-24">
-          <div className="grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-center">
-            <div className="flex items-center justify-center lg:justify-start">
-              <div className="flex h-60 w-60 items-center justify-center">
-                <Image
-                  src="/PDRRMO Logo.png"
-                  alt="PDRRMO Logo"
-                  width={800}
-                  height={800}
-                  className="object-contain"
-                />
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:px-8 lg:py-20">
+          {/* Logo + Title */}
+          <div className="flex flex-col items-center text-center gap-6 sm:flex-row sm:items-center sm:text-left sm:gap-10">
+            <div className="shrink-0 flex items-center justify-center w-36 h-36 sm:w-48 sm:h-48 lg:w-60 lg:h-60">
+              <Image
+                src="/PDRRMO Logo.png"
+                alt="PDRRMO Logo"
+                width={800}
+                height={800}
+                className="object-contain w-full h-full"
+              />
             </div>
 
-            <div className="text-white">
-              <p className="text-xs uppercase tracking-[0.35em] text-orange-300 mb-4">
+            <div className="text-white min-w-0">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-orange-300 mb-3">
                 ILOILO PROVINCIAL GOVERNMENT
               </p>
-              <h1 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight tracking-tight">
                 PROVINCIAL DISASTER RISK
-                <span className="block">REDUCTION & MANAGEMENT</span>
+                <span className="block">REDUCTION &amp; MANAGEMENT</span>
               </h1>
-              <p className="mt-6 text-sm uppercase tracking-[0.35em] text-slate-200 sm:text-base">
+              <p className="mt-4 text-xs sm:text-sm uppercase tracking-[0.3em] text-slate-200">
                 PREPARED. RESILIENT. SAFE.
               </p>
             </div>
           </div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl border border-orange/100 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
-              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
-                <Phone className="h-4 w-4" /> HOTLINE
+          {/* Contact cards */}
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-orange-200">
+                <Phone className="h-3.5 w-3.5 shrink-0" /> HOTLINE
               </div>
-              <p className="mt-3 font-semibold text-lg">(033) 328-7920 / 328-7900</p>
+              <p className="mt-2 font-semibold text-base sm:text-lg break-words">
+                (033) 328-7920 / 328-7900
+              </p>
             </div>
-            <div className="rounded-3xl border border-orange/15 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm gap-2">
-              <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
-                <Mail className="h-4 w-4" /> EMAIL
+            <div className="rounded-2xl border border-white/20 bg-white/10 p-4 text-white shadow-xl backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-orange-200">
+                <Mail className="h-3.5 w-3.5 shrink-0" /> EMAIL
               </div>
-              <p className="mt-3 font-semibold text-lg">pdrrmo_iloilo@yahoo.com.ph</p>
-              <p className="mt-3 font-semibold text-lg">pdrrmo@iloilo.gov.ph</p>
+              <p className="mt-2 font-semibold text-sm sm:text-base break-all">
+                pdrrmo_iloilo@yahoo.com.ph
+              </p>
+              <p className="mt-1 font-semibold text-sm sm:text-base break-all">
+                pdrrmo@iloilo.gov.ph
+              </p>
             </div>
           </div>
-          <div className="mt-12 grid gap-3 sm:grid-cols-1">
-              <div className=" p-4 text-white">
-                <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-orange-200">
-                  <LocateIcon className="h-4 w-4" /> ADDRESS
-                </div>
-                <p className="mt-3 font-semibold text-lg">3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City</p>
-              </div>
+
+          {/* Address */}
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-white">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-orange-200">
+              <LocateIcon className="h-3.5 w-3.5 shrink-0" /> ADDRESS
+            </div>
+            <p className="mt-2 font-semibold text-sm sm:text-base leading-relaxed">
+              3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive,
+              Iloilo City
+            </p>
           </div>
         </div>
       </section>
 
-      {/* --- CAROUSEL --- */}
-      <section className="py-12 bg-white border-y border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 relative">
-          <div className="bg-[#F58220] text-white px-6 py-2 rounded-t-lg inline-block text-xl font-bold uppercase tracking-widest">
+      {/* ── CAROUSEL ── */}
+      <section className="py-10 bg-white border-y border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 relative">
+          <div className="bg-[#F58220] text-white px-5 py-2 rounded-t-lg inline-block text-base sm:text-xl font-bold uppercase tracking-widest">
             {slides[currentSlide].title}
           </div>
-          <div className="border-3 border-[#F58220] rounded-b-lg rounded-tr-lg overflow-hidden shadow-xl aspect-video relative group bg-gray-100 flex items-center justify-center">
+          <div className="border-4 border-[#F58220] rounded-b-lg rounded-tr-lg overflow-hidden shadow-xl aspect-video relative bg-gray-100 flex items-center justify-center">
             <div className="text-center p-8">
-              <p className="text-gray-400 italic">Preparedness Infographic Illustration goes here</p>
-              <p className="text-xs mt-2 text-gray-500 underline uppercase tracking-widest cursor-pointer">View PDF Guide</p>
+              <p className="text-gray-400 italic text-sm">
+                Preparedness Infographic Illustration goes here
+              </p>
+              <p className="text-xs mt-2 text-gray-500 underline uppercase tracking-widest cursor-pointer">
+                View PDF Guide
+              </p>
             </div>
-
-            <button onClick={handlePrevSlide} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition">
-              <ChevronLeft />
+            <button
+              onClick={handlePrevSlide}
+              aria-label="Previous slide"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-md transition"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <button onClick={handleNextSlide} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition">
-              <ChevronRight />
+            <button
+              onClick={handleNextSlide}
+              aria-label="Next slide"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-md transition"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
           <div className="flex justify-center gap-2 mt-4">
             {slides.map((_, i) => (
-              <div key={i} className={`w-3 h-3 rounded-full transition ${i === currentSlide ? "bg-[#F58220]" : "bg-gray-300"}`}></div>
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`w-3 h-3 rounded-full transition ${
+                  i === currentSlide ? "bg-[#F58220]" : "bg-gray-300"
+                }`}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* --- UPDATES GRID --- */}
-      <section className="py-12 max-w-7xl mx-auto px-2 grid md:grid-cols-2 gap-10">
+      {/* ── UPDATES GRID ── */}
+      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
+
         {/* Latest Updates */}
         <div>
-          <h2 className="text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
-            <span className="w-2 h-8 bg-[#F58220] block"></span>Latest Updates
+          <h2 className="text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
+            <span className="w-2 h-7 bg-[#F58220] block shrink-0" />
+            Latest Updates
           </h2>
 
-          <div className="space-y-8 max-w-7xl mx-auto px-4">
+          <div className="space-y-8">
+            {/* Issuances */}
             <div>
-              <h3 className="text-sm font-bold text-[#002E5D] uppercase tracking-tighter mb-4">Issuances</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-[#002E5D] uppercase tracking-wider mb-4">
+                Issuances
+              </h3>
               <div className="space-y-2">
                 {issuances.map((issuance, i) => (
                   <a
@@ -216,75 +272,165 @@ const Home: NextPage = () => {
                     rel="noreferrer"
                     className="flex items-center justify-between p-3 border border-gray-200 rounded hover:border-[#F58220] group transition"
                   >
-                    <span className="text-sm text-[#002E5D] underline font-medium group-hover:text-[#F58220]">{issuance.text}</span>
-                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#F58220]" />
+                    <span className="text-xs sm:text-sm text-[#002E5D] underline font-medium group-hover:text-[#F58220] pr-2 leading-snug">
+                      {issuance.text}
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#F58220] shrink-0" />
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* --- Activity Higlights --- */}
-
+            {/* Activity Highlights */}
             <div>
-              <h3 className="text-sm font-bold text-[#002E5D] uppercase tracking-tighter mb-4">Activities</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-[#002E5D] uppercase tracking-wider mb-4">
+                Activities
+              </h3>
               <div className="rounded-lg overflow-hidden border-4 border-gray-100 shadow-lg">
                 <Image
                   src="/GADMeeting.jpg"
                   alt="Recent Activities"
                   width={800}
                   height={192}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-44 sm:h-52 object-cover"
                 />
                 <div className="p-4 bg-white">
-                  <p className="text-xs font-semibold text-gray-500 uppercase">Hotel del Rio - March 26, 2026</p>
-                  <p className="text-sm mt-1 font-bold text-[#002E5D]">𝐒𝐓𝐑𝐄𝐍𝐆𝐓𝐇𝐄𝐍𝐈𝐍𝐆 𝐏𝐑𝐎𝐓𝐄𝐂𝐓𝐈𝐎𝐍 𝐅𝐎𝐑 𝐖𝐎𝐌𝐄𝐍 𝐀𝐍𝐃 𝐂𝐇𝐈𝐋𝐃𝐑𝐄𝐍</p>
+                  <p className="text-[11px] font-semibold text-gray-500 uppercase">
+                    Hotel del Rio – March 26, 2026
+                  </p>
+                  <p className="text-sm mt-1 font-bold text-[#002E5D] leading-snug">
+                    𝐒𝐓𝐑𝐄𝐍𝐆𝐓𝐇𝐄𝐍𝐈𝐍𝐆 𝐏𝐑𝐎𝐓𝐄𝐂𝐓𝐈𝐎𝐍 𝐅𝐎𝐑 𝐖𝐎𝐌𝐄𝐍 𝐀𝐍𝐃 𝐂𝐇𝐈𝐋𝐃𝐑𝐄𝐍
+                  </p>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Disasters and Calamity Updates */}
-        <div className="flex flex-col h-full">
-          <h2 className="text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
-            <span className="w-2 h-8 bg-[#F58220] block"></span>Disasters and Calamity Updates
+        {/* ── ENHANCED FACEBOOK FEED PANEL ── */}
+        <div className="flex flex-col">
+          <h2 className="text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
+            <span className="w-2 h-7 bg-[#F58220] block shrink-0" />
+            Disasters &amp; Calamity Updates
           </h2>
-          <div className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex flex-col">
-            <div className="bg-[#F58220] p-3 text-white text-center text-xs font-bold flex items-center justify-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-              AS OF {phTime}
+
+          {/* Card wrapper */}
+          <div className="flex-1 flex flex-col rounded-xl border border-gray-200 overflow-hidden shadow-md bg-white">
+
+            {/* Card header */}
+            <div className="bg-[#002E5D] px-4 py-3 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-[#F58220] flex items-center justify-center shrink-0">
+                  <FaFacebookF className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-xs font-bold truncate">
+                    Operation Center PDRRMO Iloilo
+                  </p>
+                  <a
+                    href="https://www.facebook.com/Heman201"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-blue-300 text-[10px] hover:underline truncate block"
+                  >
+                    facebook.com/Heman201
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-300 text-[10px] font-semibold uppercase tracking-wider hidden sm:block">
+                  Live Feed
+                </span>
+              </div>
             </div>
-            <div className="flex-1 flex items-center justify-center text-gray-400 italic text-sm p-10 text-center">
+
+            {/* Live timestamp bar */}
+            <div className="bg-[#F58220]/10 border-b border-[#F58220]/20 px-4 py-1.5 flex items-center gap-2 shrink-0">
+              <span className="w-1.5 h-1.5 bg-[#F58220] rounded-full" />
+              <p className="text-[10px] font-bold text-[#002E5D] uppercase tracking-widest">
+                As of {phTime}
+              </p>
+            </div>
+
+            {/* iFrame shell */}
+            <div className="relative flex-1 min-h-[420px] sm:min-h-[500px] bg-gray-50">
+              {/* Skeleton loader shown until iframe fires onLoad */}
+              {!iframeLoaded && (
+                <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3 bg-gray-200 rounded w-2/3" />
+                      <div className="h-2 bg-gray-200 rounded w-1/3" />
+                    </div>
+                  </div>
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="h-3 bg-gray-200 rounded w-full" />
+                      <div className="h-3 bg-gray-200 rounded w-5/6" />
+                      <div className="h-24 bg-gray-200 rounded-lg w-full" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <iframe
-              src={panahonMapUrl}
-              title="Panahon weather map"
-              className="w-full h-full"
-              loading="lazy"
-              style={{ minHeight: 400, minWidth: 650 }}
-            />
+                src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=600&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
+                className={`w-full h-full absolute inset-0 border-0 transition-opacity duration-500 ${
+                  iframeLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                style={{ minHeight: "420px" }}
+                loading="lazy"
+                scrolling="no"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                onLoad={() => setIframeLoaded(true)}
+                title="PDRRMO Iloilo Facebook Feed"
+              />
+            </div>
+
+            {/* Card footer CTA */}
+            <div className="bg-gray-50 border-t border-gray-200 px-4 py-2.5 flex items-center justify-between gap-2 shrink-0">
+              <p className="text-[11px] text-gray-500">
+                Follow for real-time disaster updates
+              </p>
+              <a
+                href="https://www.facebook.com/Heman201"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1.5 bg-[#002E5D] hover:bg-[#F58220] text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded transition-colors duration-200"
+              >
+                <FaFacebookF className="w-3 h-3" />
+                Follow Page
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- USEFUL LINKS --- */}
+      {/* ── USEFUL LINKS ── */}
       <section className="py-12 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-center text-2xl font-black text-[#F58220] uppercase mb-10">Useful Links</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-center text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-10">
+            Useful Links
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {usefulLinks.map((link, i) => (
               <a
                 key={i}
                 href={link.href}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="flex flex-col shadow-lg rounded-lg overflow-hidden group hover:-translate-y-1 transition duration-300"
               >
                 <div className="bg-white p-4 flex items-center justify-center h-16">
                   <div className="flex gap-2 items-center">
-                    <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center text-[#002E5D] font-bold">{link.label[0]}</div>
-                    <span className="font-bold text-[#002E5D] text-lg">{link.label}</span>
+                    <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center text-[#002E5D] font-bold shrink-0">
+                      {link.label[0]}
+                    </div>
+                    <span className="font-bold text-[#002E5D] text-base sm:text-lg">
+                      {link.label}
+                    </span>
                   </div>
                 </div>
                 <div className="bg-[#002E5D] p-3 text-white text-center text-xs font-bold uppercase tracking-widest group-hover:bg-[#F58220] transition">
@@ -296,89 +442,86 @@ const Home: NextPage = () => {
         </div>
       </section>
 
-      {/* --- FOOTER --- */}
-      <footer className="bg-white border-t border-gray-200 pt-12 pb-6">
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-10 border-b border-gray-100 pb-10 mb-7">
-          <div className="flex items-center gap-20">
-            <div className="flex gap-3">
-              <Image
-                src="/IPG Logo.png"
-                alt="Provincial Government Logo"
-                width={40}
-                height={40}
-              />
-              <Image
-                src="/PDRRMO Logo.png"
-                alt="PDRRMO Logo"
-                width={40}
-                height={40}
-              />
-              <Image
-                src="/PCDAC.png"
-                alt="Community Defense Logo"
-                width={40}
-                height={40}
-              />
+      {/* ── FOOTER ── */}
+      <footer className="bg-white border-t border-gray-200 pt-10 pb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 border-b border-gray-100 pb-10 mb-7">
+
+          {/* Logos + org names */}
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="flex gap-3 shrink-0">
+              <Image src="/IPG Logo.png" alt="Provincial Government Logo" width={40} height={40} className="w-10 h-10" />
+              <Image src="/PDRRMO Logo.png" alt="PDRRMO Logo" width={40} height={40} className="w-10 h-10" />
+              <Image src="/PCDAC.png" alt="Community Defense Logo" width={40} height={40} className="w-10 h-10" />
             </div>
             <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-black uppercase text-gray-400">Official Seal</p>
-              <p className="text-xs font-bold text-[#002E5D]">Iloilo Provincial Government</p>
-              <p className="text-xs font-bold text-[#002E5D]">Iloilo Provincial Disaster Risk Reduction and Management Office</p>
-              <p className="text-xs font-bold text-[#002E5D]">Provincial Community Defense Action Center - Iloilo</p>
+              <p className="text-[10px] font-black uppercase text-gray-400">
+                Official Seal
+              </p>
+              <p className="text-xs font-bold text-[#002E5D] leading-snug">
+                Iloilo Provincial Government
+              </p>
+              <p className="text-xs font-bold text-[#002E5D] leading-snug">
+                Iloilo Provincial Disaster Risk Reduction and Management Office
+              </p>
+              <p className="text-xs font-bold text-[#002E5D] leading-snug">
+                Provincial Community Defense Action Center – Iloilo
+              </p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Contact */}
+          <div className="space-y-3">
             <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Contact Us
+              <MapPin className="w-4 h-4 shrink-0" /> Contact Us
             </h4>
             <p className="text-xs text-gray-600 leading-relaxed">
-              3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City
+              3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive,
+              Iloilo City
             </p>
             <p className="text-xs text-gray-600">(033) 338-7951 | 338-7956</p>
-            <p className="text-xs text-gray-600 underline">pdrrmo.iloilo@yahoo.com.ph</p>
+            <p className="text-xs text-gray-600 underline break-all">
+              pdrrmo.iloilo@yahoo.com.ph
+            </p>
           </div>
 
-          <div className="space-y-4">
+          {/* Social + portals */}
+          <div className="space-y-3">
             <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2">
-              <FaFacebookF className="w-4 h-4" /> Follow Us
-            </h4>
-            <div className="space-y-2">
-              <a
-                href="https://www.facebook.com/Heman201"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="block text-xs text-gray-600 font-bold underline"
-              >
-                Operation Center PDRRMO Iloilo
-              </a>
-              <a
-                href="https://www.facebook.com/iloilopdrrmo"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="block text-xs text-gray-600 font-bold underline"
-              >
-                Provincial Disaster Risk Reduction and Management Office - Iloilo
-              </a>
-            </div>
-            <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2 mt-4">
-              
-              <Globe className="w-4 h-4" /> Portals
+              <FaFacebookF className="w-3.5 h-3.5 shrink-0" /> Follow Us
             </h4>
             <a
-                href="https://iloilo.gov.ph/"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="block text-xs text-gray-600 font-bold underline"
-              >
-                Iloilo.gov.ph
-              </a>
+              href="https://www.facebook.com/Heman201"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block text-xs text-gray-600 font-bold underline leading-snug"
+            >
+              Operation Center PDRRMO Iloilo
+            </a>
+            <a
+              href="https://www.facebook.com/iloilopdrrmo"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block text-xs text-gray-600 font-bold underline leading-snug"
+            >
+              Provincial Disaster Risk Reduction and Management Office – Iloilo
+            </a>
+            <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2 pt-2">
+              <Globe className="w-4 h-4 shrink-0" /> Portals
+            </h4>
+            <a
+              href="https://iloilo.gov.ph/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block text-xs text-gray-600 font-bold underline"
+            >
+              Iloilo.gov.ph
+            </a>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-gray-400 font-bold uppercase">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-[10px] text-gray-400 font-bold uppercase text-center sm:text-left">
           <p>Developed by: PDRRMO Research and Planning Intern (Batch 2025)</p>
-          <p>© 2024 All Rights Reserved</p>
+          <p className="shrink-0">© 2024 All Rights Reserved</p>
         </div>
       </footer>
     </div>
