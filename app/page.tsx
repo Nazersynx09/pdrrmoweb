@@ -102,6 +102,8 @@ const Home: NextPage = () => {
 
   const l2 = useRef<SVGSVGElement>(null);
   const l3 = useRef<SVGSVGElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const DURATION = 3500;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -128,6 +130,27 @@ const Home: NextPage = () => {
     });
   }, []);
 
+useEffect(() => {
+  const bar = progressRef.current;
+  if (!bar) return;
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+  const raf = requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      bar.style.transition = `width ${DURATION}ms linear`;
+      bar.style.width = "100%";
+    })
+  );
+  const timer = setTimeout(() => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, DURATION);
+  return () => {
+    cancelAnimationFrame(raf);
+    clearTimeout(timer);
+  };
+}, [currentSlide]);
+
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 mt-10">
 
@@ -137,7 +160,7 @@ const Home: NextPage = () => {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
+        <div className="absolute inset-0 bg-linear-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-10 lg:px-8 lg:py-20">
           {/* Logo + Title */}
@@ -172,7 +195,7 @@ const Home: NextPage = () => {
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-orange-200">
                 <Phone className="h-3.5 w-3.5 shrink-0" /> HOTLINE
               </div>
-              <p className="mt-2 font-semibold text-base sm:text-lg break-words">
+              <p className="mt-2 font-semibold text-base sm:text-lg wrap-break-words">
                 (033) 328-7920 / 328-7900
               </p>
             </div>
@@ -203,49 +226,77 @@ const Home: NextPage = () => {
       </section>
 
       {/* ── CAROUSEL ── */}
-      <section className="py-10 bg-white border-y border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 relative">
-          <div className="bg-[#F58220] text-white px-5 py-2 rounded-t-lg inline-block text-base sm:text-xl font-bold uppercase tracking-widest">
-            {slides[currentSlide].title}
+<section className="py-10 bg-white border-y border-gray-100">
+  <div className="max-w-6xl max-h-full mx-auto px-4">
+    <div className="border-[3px] border-[#F58220] rounded-xl overflow-hidden relative bg-gray-50 aspect-video shadow-sm">
+
+      {/* Slide track */}
+      <div
+        className="flex w-full h-full"
+        style={{
+          transform: `translateX(-${currentSlide * 100}%)`,
+          transition: "transform 0.4s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        {slides.map((slide, i) => (
+          <div
+            key={i}
+            className="min-w-full h-full flex flex-col items-center justify-center gap-3 px-10 py-8 bg-amber-500/40"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#F58220] bg-[#F58220]/40 px-2 py-1 rounded">
+              {slide.type}
+            </p>
+            <p className="text-lg sm:text-xl font-black text-[#002E5D] text-center uppercase tracking-wide">
+              {slide.title}
+            </p>
+            <p className="text-sm text-gray-400 italic text-center mt-1">
+              Preparedness infographic illustration goes here
+            </p>
+            <p className="text-xs mt-1 text-gray-400 underline uppercase tracking-widest cursor-pointer">
+              View PDF Guide
+            </p>
           </div>
-          <div className="border-4 border-[#F58220] rounded-b-lg rounded-tr-lg overflow-hidden shadow-xl aspect-video relative bg-gray-100 flex items-center justify-center">
-            <div className="text-center p-8">
-              <p className="text-gray-400 italic text-sm">
-                Preparedness Infographic Illustration goes here
-              </p>
-              <p className="text-xs mt-2 text-gray-500 underline uppercase tracking-widest cursor-pointer">
-                View PDF Guide
-              </p>
-            </div>
-            <button
-              onClick={handlePrevSlide}
-              aria-label="Previous slide"
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-md transition"
-            >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
-              onClick={handleNextSlide}
-              aria-label="Next slide"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-md transition"
-            >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-          </div>
-          <div className="flex justify-center gap-2 mt-4">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentSlide(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className={`w-3 h-3 rounded-full transition ${
-                  i === currentSlide ? "bg-[#F58220]" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
+
+      {/* Progress bar */}
+      <div
+        ref={progressRef}
+        className="absolute bottom-0 left-0 h-[3px] bg-[#F58220]"
+      />
+
+      {/* Nav buttons */}
+      <button
+        onClick={handlePrevSlide}
+        aria-label="Previous slide"
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
+      >
+        <ChevronLeft className="w-4 h-4 text-gray-700" />
+      </button>
+      <button
+        onClick={handleNextSlide}
+        aria-label="Next slide"
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
+      >
+        <ChevronRight className="w-4 h-4 text-gray-700" />
+      </button>
+    </div>
+
+    {/* Dots */}
+    <div className="flex justify-center gap-2 mt-4">
+      {slides.map((_, i) => (
+        <button
+          key={i}
+          onClick={() => setCurrentSlide(i)}
+          aria-label={`Go to slide ${i + 1}`}
+          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            i === currentSlide ? "bg-[#F58220] scale-125" : "bg-gray-300"
+          }`}
+        />
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* ── UPDATES GRID ── */}
       <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -307,105 +358,113 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        {/* ── ENHANCED FACEBOOK FEED PANEL ── */}
-        <div className="flex flex-col">
-          <h2 className="text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
-            <span className="w-2 h-7 bg-[#F58220] block shrink-0" />
-            Disasters &amp; Calamity Updates
-          </h2>
+        {/* ── FACEBOOK FEED PANEL ── */}
+<div className="flex flex-col">
+  <h2 className="text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
+    <span className="w-2 h-7 bg-[#F58220] block shrink-0" />
+    Disasters & Calamity Updates
+  </h2>
 
-          {/* Card wrapper */}
-          <div className="flex-1 flex flex-col rounded-xl border border-gray-200 overflow-hidden shadow-md bg-white">
+  <div className="flex flex-col rounded-xl border border-gray-200 overflow-hidden shadow-md bg-white">
 
-            {/* Card header */}
-            <div className="bg-[#002E5D] px-4 py-3 flex items-center justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[#F58220] flex items-center justify-center shrink-0">
-                  <FaFacebookF className="w-3.5 h-3.5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-white text-xs font-bold truncate">
-                    Operation Center PDRRMO Iloilo
-                  </p>
-                  <a
-                    href="https://www.facebook.com/Heman201"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-blue-300 text-[10px] hover:underline truncate block"
-                  >
-                    facebook.com/Heman201
-                  </a>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span className="text-green-300 text-[10px] font-semibold uppercase tracking-wider hidden sm:block">
-                  Live Feed
-                </span>
-              </div>
-            </div>
+    {/* Header */}
+    <div className="bg-[#002E5D] px-4 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-[#F58220] flex items-center justify-center">
+          <FaFacebookF className="w-3.5 h-3.5 text-white" />
+        </div>
 
-            {/* Live timestamp bar */}
-            <div className="bg-[#F58220]/10 border-b border-[#F58220]/20 px-4 py-1.5 flex items-center gap-2 shrink-0">
-              <span className="w-1.5 h-1.5 bg-[#F58220] rounded-full" />
-              <p className="text-[10px] font-bold text-[#002E5D] uppercase tracking-widest">
-                As of {phTime}
-              </p>
-            </div>
+        <div>
+          <p className="text-white text-xs font-bold">
+            Operation Center PDRRMO Iloilo
+          </p>
 
-            {/* iFrame shell */}
-            <div className="marginTop-70px relative flex-1 min-h-520px sm:min-h-590px bg-gray-50 overflow-hidden hide_cover=true">
-              {/* Skeleton loader shown until iframe fires onLoad */}
-              {!iframeLoaded && (
-                <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3 bg-gray-200 rounded w-2/3" />
-                      <div className="h-2 bg-gray-200 rounded w-1/3" />
-                    </div>
-                  </div>
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="h-3 bg-gray-200 rounded w-full" />
-                      <div className="h-3 bg-gray-200 rounded w-5/6" />
-                      <div className="h-24 bg-gray-200 rounded-lg w-full" />
-                    </div>
-                  ))}
-                </div>
-              )}
+          <a
+            href="https://www.facebook.com/Heman201"
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-300 text-[10px] hover:underline"
+          >
+            facebook.com/Operation Center PDRRMO Iloilo
+          </a>
+        </div>
+      </div>
 
-              <iframe
-                src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=600&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
-                className={`w-full h-520px absolute inset-0 border-0 transition-opacity duration-500${
-                  iframeLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                style={{ minHeight: "420px" }}
-                loading="lazy"
-                scrolling="no"
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                onLoad={() => setIframeLoaded(true)}
-                title="PDRRMO Iloilo Facebook Feed"
-              />
-            </div>
+      <div className="flex items-center gap-1.5">
+        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+        <span className="text-green-300 text-[10px] font-semibold uppercase tracking-wider">
+          Live Feed
+        </span>
+      </div>
+    </div>
 
-            {/* Card footer CTA */}
-            <div className="bg-gray-50 border-t border-gray-200 px-4 py-2.5 flex items-center justify-between gap-2 shrink-0">
-              <p className="text-[11px] text-gray-500">
-                Follow for real-time disaster updates
-              </p>
-              <a
-                href="https://www.facebook.com/Heman201"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 bg-[#002E5D] hover:bg-[#F58220] text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded transition-colors duration-200"
-              >
-                <FaFacebookF className="w-3 h-3" />
-                Follow Page
-              </a>
+    {/* Timestamp */}
+    <div className="bg-[#F58220]/10 border-b border-[#F58220]/20 px-4 py-1.5 flex items-center gap-2">
+      <span className="w-1.5 h-1.5 bg-[#F58220] rounded-full" />
+      <p className="text-[10px] font-bold text-[#002E5D] uppercase tracking-widest">
+        As of {phTime}
+      </p>
+    </div>
+
+    {/* Feed Container */}
+    <div className="relative flex justify-center bg-gray-50 p-3 min-h-[540px]">
+
+      {/* Skeleton loader */}
+      {!iframeLoaded && (
+        <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gray-200" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 bg-gray-200 rounded w-2/3" />
+              <div className="h-2 bg-gray-200 rounded w-1/3" />
             </div>
           </div>
+
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 bg-gray-200 rounded w-full" />
+              <div className="h-3 bg-gray-200 rounded w-5/6" />
+              <div className="h-24 bg-gray-200 rounded-lg w-full" />
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Facebook iframe */}
+      <iframe
+        src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=540&small_header=true&hide_cover=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
+        width="500"
+        height="540"
+        className={`border-0 transition-opacity duration-500 ${
+          iframeLoaded ? "opacity-100" : "opacity-0"
+        }`}
+        loading="lazy"
+        scrolling="no"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        onLoad={() => setIframeLoaded(true)}
+        title="PDRRMO Iloilo Facebook Feed"
+      />
+    </div>
+
+    {/* Footer */}
+    <div className="bg-gray-50 border-t border-gray-200 px-4 py-2.5 flex items-center justify-between">
+      <p className="text-[11px] text-gray-500">
+        Follow for real-time disaster updates
+      </p>
+
+      <a
+        href="https://www.facebook.com/Heman201"
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1.5 bg-[#002E5D] hover:bg-[#F58220] text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded transition-colors"
+      >
+        <FaFacebookF className="w-3 h-3" />
+        Follow Page
+      </a>
+    </div>
+
+  </div>
+</div>
       </section>
 
       {/* ── USEFUL LINKS ── */}
