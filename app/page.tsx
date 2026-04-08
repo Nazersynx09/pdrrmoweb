@@ -129,7 +129,7 @@ const Home: NextPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 mt-10">
 
       {/* ── HERO BANNER ── */}
       <section
