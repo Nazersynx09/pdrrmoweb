@@ -354,7 +354,7 @@ const Home: NextPage = () => {
             </div>
 
             {/* iFrame shell */}
-            <div className="relative flex-1 min-h-[420px] sm:min-h-[500px] bg-gray-50">
+            <div className="marginTop-70px relative flex-1 min-h-520px sm:min-h-590px bg-gray-50 overflow-hidden hide_cover=true">
               {/* Skeleton loader shown until iframe fires onLoad */}
               {!iframeLoaded && (
                 <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
@@ -377,7 +377,7 @@ const Home: NextPage = () => {
 
               <iframe
                 src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=600&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false"
-                className={`w-full h-full absolute inset-0 border-0 transition-opacity duration-500 ${
+                className={`w-full h-520px absolute inset-0 border-0 transition-opacity duration-500${
                   iframeLoaded ? "opacity-100" : "opacity-0"
                 }`}
                 style={{ minHeight: "420px" }}
