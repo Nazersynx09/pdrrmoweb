@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
+import page from "@/app/resources/page"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -50,11 +51,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <Image src="/PDRRMO Logo.png" alt="Logo" width={40} height={40} />
-          <span className="font-bold tracking-tight hidden md:block text-sm">
-            PDRRMO ILOILO
-          </span>
-        </div>
+  <Image src="/PDRRMO Logo.png" alt="Logo" width={40} height={40} />
+  <span className="font-bold tracking-tight hidden md:block text-sm">
+    <Link href="/" className="hover:text-[#F58220] transition">
+      PDRRMO ILOILO
+    </Link>
+  </span>
+</div>
 
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-6 text-xs font-semibold uppercase tracking-wide">

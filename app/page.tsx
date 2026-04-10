@@ -28,6 +28,12 @@ interface UsefulLink {
   href: string;
 }
 
+interface Slide {
+  title: string;
+  type: string;
+  image: string;
+}
+
 const formatPhilippineTime = (date: Date) =>
   new Intl.DateTimeFormat("en-PH", {
     year: "numeric",
@@ -54,8 +60,16 @@ const Home: NextPage = () => {
   }, []);
 
   const slides: Slide[] = [
-    { title: "EARTHQUAKE PREPAREDNESS", type: "Earthquake info guide" },
-    { title: "FLOOD SAFETY", type: "Water level advisory" },
+  {
+    title: "EARTHQUAKE PREPAREDNESS",
+    type: "Earthquake info guide",
+    image: "/earthquake.jpg",
+  },
+  {
+    title: "FLOOD SAFETY",
+    type: "Water level advisory",
+    image: "/FloodIEC.png",
+  },
   ];
 
   const issuances: { text: string; href: string }[] = [
@@ -226,95 +240,111 @@ useEffect(() => {
       </section>
 
       {/* ── CAROUSEL ── */}
-<section className="py-10 bg-white border-y border-gray-100">
-  <div className="max-w-6xl max-h-full mx-auto px-4">
-    <div className="border-[3px] border-[#F58220] rounded-xl overflow-hidden relative bg-gray-50 aspect-video shadow-sm">
+      <section className="py-10 bg-white border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-3 sm:py-1 lg:px-0">
+          <div className="cover overflow-hidden relative bg-gray-50 aspect-video shadow-sm">
 
-      {/* Slide track */}
-      <div
-        className="flex w-full h-full"
-        style={{
-          transform: `translateX(-${currentSlide * 100}%)`,
-          transition: "transform 0.4s cubic-bezier(0.4,0,0.2,1)",
-        }}
-      >
-        {slides.map((slide, i) => (
-          <div
-            key={i}
-            className="min-w-full h-full flex flex-col items-center justify-center gap-3 px-10 py-8 bg-amber-500/40"
-          >
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#F58220] bg-[#F58220]/40 px-2 py-1 rounded">
-              {slide.type}
-            </p>
-            <p className="text-lg sm:text-xl font-black text-[#002E5D] text-center uppercase tracking-wide">
-              {slide.title}
-            </p>
-            <p className="text-sm text-gray-400 italic text-center mt-1">
-              Preparedness infographic illustration goes here
-            </p>
-            <p className="text-xs mt-1 text-gray-400 underline uppercase tracking-widest cursor-pointer">
-              View PDF Guide
-            </p>
-          </div>
-        ))}
-      </div>
+            {/* Slide track */}
+            <div
+              className="flex w-full h-full"
+              style={{
+                transform: `translateX(-${currentSlide * 100}%)`,
+                transition: "transform 0.4s cubic-bezier(0.4,0,0.2,1)",
+              }}
+            >
+              {slides.map((slide, i) => (
+            <div
+              key={i}
+              className="min-w-full h-full relative flex items-center justify-center"
+            >
 
-      {/* Progress bar */}
-      <div
-        ref={progressRef}
-        className="absolute bottom-0 left-0 h-[3px] bg-[#F58220]"
-      />
+              {/* Background Image */}
+              <Image
+                src={slide.image}
+                alt={slide.title}
+                fill
+                className="object-cover"
+                priority
+              />
 
-      {/* Nav buttons */}
-      <button
-        onClick={handlePrevSlide}
-        aria-label="Previous slide"
-        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
-      >
-        <ChevronLeft className="w-4 h-4 text-gray-700" />
-      </button>
-      <button
-        onClick={handleNextSlide}
-        aria-label="Next slide"
-        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
-      >
-        <ChevronRight className="w-4 h-4 text-gray-700" />
-      </button>
-    </div>
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/40" />
 
-    {/* Dots */}
-    <div className="flex justify-center gap-2 mt-4">
-      {slides.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => setCurrentSlide(i)}
-          aria-label={`Go to slide ${i + 1}`}
-          className={`w-2 h-2 rounded-full transition-all duration-200 ${
-            i === currentSlide ? "bg-[#F58220] scale-125" : "bg-gray-300"
-          }`}
-        />
+              {/* Text Content */}
+              <div className="relative z-10 text-center text-white px-6">
+                <p className="text-xs font-semibold uppercase tracking-widest bg-orange-500/80 px-3 py-1 rounded inline-block">
+                  {slide.type}
+                </p>
+
+                <p className="text-2xl sm:text-3xl font-black mt-3 uppercase tracking-wide">
+                  {slide.title}
+                </p>
+
+                <p className="text-xs mt-3 underline uppercase tracking-widest cursor-pointer">
+                  View PDF Guide
+                </p>
+              </div>
+
+        </div>
       ))}
-    </div>
-  </div>
-</section>
+            </div>
+
+            {/* Progress bar */}
+            <div
+              ref={progressRef}
+              className="absolute bottom-0 left-0 h-3px bg-[#F58220]"
+            />
+
+            {/* Nav buttons */}
+            <button
+              onClick={handlePrevSlide}
+              aria-label="Previous slide"
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-700" />
+            </button>
+            <button
+              onClick={handleNextSlide}
+              aria-label="Next slide"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-100 border border-gray-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-700" />
+            </button>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-4">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  i === currentSlide ? "bg-[#F58220] scale-125" : "bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ── UPDATES GRID ── */}
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
+      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-10">
 
         {/* Latest Updates */}
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-[#F58220] uppercase mb-6 flex items-center gap-2">
-            <span className="w-2 h-7 bg-[#F58220] block shrink-0" />
+            <span className="w-2 h-8 bg-[#F58220] block shrink-0" />
             Latest Updates
           </h2>
 
-          <div className="space-y-8">
+          <div className="space-y-7">
             {/* Issuances */}
-            <div>
+            <div className="col grid-cols-2 h-65 overflow-y-hidden">
               <h3 className="text-xs sm:text-sm font-bold text-[#002E5D] uppercase tracking-wider mb-4">
                 Issuances
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {issuances.map((issuance, i) => (
                   <a
                     key={i}
@@ -337,13 +367,13 @@ useEffect(() => {
               <h3 className="text-xs sm:text-sm font-bold text-[#002E5D] uppercase tracking-wider mb-4">
                 Activities
               </h3>
-              <div className="rounded-lg overflow-hidden border-4 border-gray-100 shadow-lg">
+              <div className="rounded-lg overflow-hidden  shadow-lg max-h-auto">
                 <Image
                   src="/GADMeeting.jpg"
                   alt="Recent Activities"
                   width={800}
-                  height={192}
-                  className="w-full h-44 sm:h-52 object-cover"
+                  height={200}
+                  className="w-full h-44 sm:h-75 object-cover"
                 />
                 <div className="p-4 bg-white">
                   <p className="text-[11px] font-semibold text-gray-500 uppercase">
@@ -382,7 +412,7 @@ useEffect(() => {
           <a
             href="https://www.facebook.com/Heman201"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             className="text-blue-300 text-[10px] hover:underline"
           >
             facebook.com/Operation Center PDRRMO Iloilo
@@ -407,7 +437,7 @@ useEffect(() => {
     </div>
 
     {/* Feed Container */}
-    <div className="relative flex justify-center bg-gray-50 p-3 min-h-[540px]">
+    <div className="relative flex justify-center bg-gray-50 p-3 min-h-540px">
 
       {/* Skeleton loader */}
       {!iframeLoaded && (
@@ -455,7 +485,7 @@ useEffect(() => {
       <a
         href="https://www.facebook.com/Heman201"
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer noopener"
         className="inline-flex items-center gap-1.5 bg-[#002E5D] hover:bg-[#F58220] text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded transition-colors"
       >
         <FaFacebookF className="w-3 h-3" />
