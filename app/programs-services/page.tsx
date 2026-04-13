@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { 
-  ChevronDown, Clock, FileText, Users, ExternalLink, 
-  ArrowRight, Search, Filter, MapPin, Shield, AlertTriangle,
-  CheckCircle2, Circle
+  ChevronDown, Clock, FileText, 
+  ArrowRight, Search, Shield, CheckCircle2
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
@@ -270,6 +269,7 @@ export default function ProgramServices() {
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 min-w-140px px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
@@ -312,6 +312,7 @@ export default function ProgramServices() {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <button
+                    type="button"
                     onClick={() => setExpandedId(isExpanded ? null : item.id)}
                     aria-expanded={isExpanded}
                     className="w-full flex items-center justify-between gap-4 p-5 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#F58220]"
