@@ -47,11 +47,11 @@ export default function Navbar() {
   }, [])
 
   return (
-    <nav className="bg-[#002E5D] text-white fixed top-0 w-full z-50 shadow-md mb-10" ref={mobileMenuRef}>
+    <nav className="bg-[#002E5D] text-white fixed top-0 w-full z-50 shadow-md" ref={mobileMenuRef}>
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-  <Image src="/PDRRMO Logo.png" alt="Logo" width={40} height={40} />
+  <Image src="/pdrrmoLogo.png" alt="Logo" width={40} height={40} />
   <span className="font-bold tracking-tight hidden md:block text-sm">
     <Link href="/" className="hover:text-[#F58220] transition">
       PDRRMO ILOILO

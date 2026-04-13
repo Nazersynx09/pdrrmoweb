@@ -2,27 +2,94 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Globe, FileText, Map, Award, ChevronRight, Download, ExternalLink, X, ZoomIn } from "lucide-react";
+import {
+  MapPin,
+  Globe,
+  FileText,
+  Map,
+  Award,
+  ExternalLink,
+  X,
+  ZoomIn,
+  ZoomOut,
+  Download,
+  RotateCcw,
+} from "lucide-react";
 import { FaFacebookF } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import Footer from "@/components/Footer";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const hazardMaps = [
-  { id: 1, label: "Flood Hazard Map", src: "/Flooding Hazard.tif", desc: "Flood risk zones across Iloilo Province" },
-  { id: 2, label: "Storm Surge Map",  src: "/Storm Surge Hazard.tif", desc: "Coastal storm surge susceptibility areas" },
-  { id: 3, label: "Landslide Map",    src: "/Rain Induced Landslide.tif", desc: "Landslide-prone zones and evacuation routes" },
-  { id: 4, label: "Tsunami Hazard Map", src: "/Tsunami.tif", desc: "Tsunami risk zones across Iloilo Province" },
-  { id: 5, label: "EIL West Panay Fault Map (S.2)",  src: "/EIL Scenario 2 West Panay Fault.tif", desc: "EIL risk zones across Iloilo Province (S.2)" },
-  { id: 6, label: "EIL Negros Trench (S.6)",    src: "/EIL Scenario 6 Negros Trench.tif", desc: "EIL risk zones across Iloilo Province (S.6)" },
-  { id: 7, label: "Groundshaking West Panay Fault Map (S.2)",  src: "/Groundshaking Scenario 2 West Panay.tif", desc: "Groundshaking risk zones across Iloilo Province (S.2)" },
-  { id: 8, label: "Groundshaking Negros Trench (S.6)",    src: "/Groundshaking Scenario 6 Negros Trench.tif", desc: "Groundshaking risk zones across Iloilo Province (S.6)" },
-   { id: 9, label: "Liquefaction West Panay Fault Map (S.2)",  src: "/Liquefaction Scenario 2 West Panay.tif", desc: "Liquefaction risk zones across Iloilo Province (S.2)" },
-  { id: 10, label: "Liquefaction Negros Trench (S.6)",    src: "/Liquefaction Scenario 6 Negros Trench.tif", desc: "Liquefaction risk zones across Iloilo Province (S.6)" },
+  {
+    id: 1,
+    label: "Flood Hazard Map",
+    src: "/floodingHazard.tif",
+    desc: "Flood risk zones across Iloilo Province",
+  },
+  {
+    id: 2,
+    label: "Storm Surge Map",
+    src: "/stormSurgeHazard.tif",
+    desc: "Coastal storm surge susceptibility areas",
+  },
+  {
+    id: 3,
+    label: "Landslide Map",
+    src: "/rainInducedLandslide.tif",
+    desc: "Landslide-prone zones and evacuation routes",
+  },
+  {
+    id: 4,
+    label: "Tsunami Hazard Map",
+    src: "/Tsunami.tif",
+    desc: "Tsunami risk zones across Iloilo Province",
+  },
+  {
+    id: 5,
+    label: "EIL West Panay Fault Map (S.2)",
+    src: "/eilScenario2WestPanayFault.tif",
+    desc: "EIL risk zones across Iloilo Province (S.2)",
+  },
+  {
+    id: 6,
+    label: "EIL Negros Trench (S.6)",
+    src: "/eilScenario6NegrosTrench.tif",
+    desc: "EIL risk zones across Iloilo Province (S.6)",
+  },
+  {
+    id: 7,
+    label: "Groundshaking West Panay Fault Map (S.2)",
+    src: "/groundshakingScenario2WestPanay.tif",
+    desc: "Groundshaking risk zones across Iloilo Province (S.2)",
+  },
+  {
+    id: 8,
+    label: "Groundshaking Negros Trench (S.6)",
+    src: "/groundshakingScenario6NegrosTrench.tif",
+    desc: "Groundshaking risk zones across Iloilo Province (S.6)",
+  },
+  {
+    id: 9,
+    label: "Liquefaction West Panay Fault Map (S.2)",
+    src: "/liquefactionScenario2WestPanay.tif",
+    desc: "Liquefaction risk zones across Iloilo Province (S.2)",
+  },
+  {
+    id: 10,
+    label: "Liquefaction Negros Trench (S.6)",
+    src: "/liquefactionScenario6NegrosTrench.tif",
+    desc: "Liquefaction risk zones across Iloilo Province (S.6)",
+  },
 ];
 
 const issuances = [
-  { label: "NDRRMC Memorandum No. 14, s.2025", href: "./Super Typhoon TTEX.pdf", date: "2025" },
+  {
+    label: "NDRRMC Memorandum No. 14, s.2025",
+    href: "./superTyphoonTtex.pdf",
+    date: "2025",
+  },
   { label: "NDRRMC Memorandum No. 10, s.2025", href: "#", date: "2025" },
   { label: "NDRRMC Memorandum No. 30, s.2025", href: "#", date: "2025" },
   { label: "NDRRMC Memorandum No. 31, s.2025", href: "#", date: "2025" },
@@ -34,77 +101,175 @@ const issuances = [
 type GKYear = "2024" | "2023" | "2022";
 type GKCategory = "Special Awards" | "Hall of Fame" | "Search Results";
 
-const gawadKalasagData: Record<GKYear, Record<GKCategory, { name: string; region: string; classRating: string }[]>> = {
+const gawadKalasagData: Record<
+  GKYear,
+  Record<GKCategory, { name: string; region: string; classRating: string }[]>
+> = {
   "2024": {
     "Special Awards": [
-      { name: "Taekwondo Iloilo Province Dragons Brigade, Inc.", region: "VI", classRating: "SA-GK" },
-      { name: "Iloilo Provincial DRRM Council",                 region: "VI", classRating: "SA-GK" },
+      {
+        name: "Taekwondo Iloilo Province Dragons Brigade, Inc.",
+        region: "VI",
+        classRating: "SA-GK",
+      },
+      {
+        name: "Iloilo Provincial DRRM Council",
+        region: "VI",
+        classRating: "SA-GK",
+      },
     ],
     "Hall of Fame": [
-      { name: "Municipality of Pavia",    region: "VI", classRating: "HF-GK" },
-      { name: "Municipality of Leganes",  region: "VI", classRating: "HF-GK" },
+      { name: "Municipality of Pavia", region: "VI", classRating: "HF-GK" },
+      { name: "Municipality of Leganes", region: "VI", classRating: "HF-GK" },
     ],
     "Search Results": [
-      { name: "Municipality of Maasin",   region: "VI", classRating: "Gold"   },
-      { name: "Municipality of Calinog",  region: "VI", classRating: "Silver" },
-      { name: "Municipality of Igbaras",  region: "VI", classRating: "Bronze" },
+      { name: "Municipality of Maasin", region: "VI", classRating: "Gold" },
+      { name: "Municipality of Calinog", region: "VI", classRating: "Silver" },
+      { name: "Municipality of Igbaras", region: "VI", classRating: "Bronze" },
     ],
   },
   "2023": {
     "Special Awards": [
-      { name: "Iloilo Rescue Team Alpha",      region: "VI", classRating: "SA-GK" },
+      { name: "Iloilo Rescue Team Alpha", region: "VI", classRating: "SA-GK" },
     ],
     "Hall of Fame": [
-      { name: "Municipality of Dumangas",      region: "VI", classRating: "HF-GK" },
+      { name: "Municipality of Dumangas", region: "VI", classRating: "HF-GK" },
     ],
     "Search Results": [
-      { name: "Municipality of Badiangan",     region: "VI", classRating: "Gold"   },
-      { name: "Municipality of Oton",          region: "VI", classRating: "Silver" },
+      { name: "Municipality of Badiangan", region: "VI", classRating: "Gold" },
+      { name: "Municipality of Oton", region: "VI", classRating: "Silver" },
     ],
   },
   "2022": {
     "Special Awards": [
-      { name: "Provincial Rescue Task Force",  region: "VI", classRating: "SA-GK" },
+      {
+        name: "Provincial Rescue Task Force",
+        region: "VI",
+        classRating: "SA-GK",
+      },
     ],
     "Hall of Fame": [
-      { name: "Municipality of Anilao",        region: "VI", classRating: "HF-GK" },
+      { name: "Municipality of Anilao", region: "VI", classRating: "HF-GK" },
     ],
     "Search Results": [
-      { name: "Municipality of Cabatuan",      region: "VI", classRating: "Gold"   },
+      { name: "Municipality of Cabatuan", region: "VI", classRating: "Gold" },
     ],
   },
 };
 
-const gkYears: GKYear[]      = ["2024", "2023", "2022"];
-const gkCategories: GKCategory[] = ["Special Awards", "Hall of Fame", "Search Results"];
+const gkYears: GKYear[] = ["2024", "2023", "2022"];
+const gkCategories: GKCategory[] = [
+  "Special Awards",
+  "Hall of Fame",
+  "Search Results",
+];
 
 const categoryColor: Record<GKCategory, string> = {
   "Special Awards": "bg-[#002E5D]",
-  "Hall of Fame":   "bg-amber-600",
+  "Hall of Fame": "bg-amber-600",
   "Search Results": "bg-emerald-700",
 };
 
 const ratingBadge: Record<string, string> = {
-  Gold:   "bg-amber-100 text-amber-800 border border-amber-300",
+  Gold: "bg-amber-100 text-amber-800 border border-amber-300",
   Silver: "bg-gray-100 text-gray-700 border border-gray-300",
   Bronze: "bg-orange-100 text-orange-800 border border-orange-300",
   "SA-GK": "bg-blue-100 text-blue-800 border border-blue-300",
   "HF-GK": "bg-purple-100 text-purple-800 border border-purple-300",
 };
 
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 5;
+
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function ResourcesPage() {
-  const [lightboxSrc, setLightboxSrc]   = useState<string | null>(null);
-  const [lightboxLabel, setLightboxLabel] = useState("");
-  const [activeYear, setActiveYear]     = useState<GKYear>("2024");
-  const [activeCategory, setActiveCategory] = useState<GKCategory>("Special Awards");
+  // ─── GENERAL STATE ──────────────────────────────────────────────────────────
+  const [activeYear, setActiveYear] = useState<GKYear>("2024");
+  const [activeCategory, setActiveCategory] =
+    useState<GKCategory>("Special Awards");
   const [issuanceFilter, setIssuanceFilter] = useState<string>("All");
+
+  // ─── LIGHTBOX STATE ─────────────────────────────────────────────────────────
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxLabel, setLightboxLabel] = useState("");
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const positionRef = useRef({ x: 0, y: 0 });
+  const imageWrapperRef = useRef<HTMLDivElement>(null);
+
+  // ─── LIGHTBOX HANDLERS ──────────────────────────────────────────────────────
 
   const openLightbox = (src: string, label: string) => {
     setLightboxSrc(src);
     setLightboxLabel(label);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    positionRef.current = { x: 0, y: 0 };
   };
+
+  const closeLightbox = () => {
+    setLightboxSrc(null);
+    setLightboxLabel("");
+  };
+
+  const resetView = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    positionRef.current = { x: 0, y: 0 };
+  };
+
+  // ─── DRAG HANDLERS ──────────────────────────────────────────────────────────
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dragStart.current = {
+      x: e.clientX - positionRef.current.x,
+      y: e.clientY - positionRef.current.y,
+    };
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragStart.current) return;
+    const next = {
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y,
+    };
+    positionRef.current = next;
+    setPosition(next);
+  };
+
+  const handleMouseUp = () => {
+    dragStart.current = null;
+    setIsDragging(false);
+  };
+
+  // ─── WHEEL ZOOM ─────────────────────────────────────────────────────────────
+  // Attached via useEffect with { passive: false } so we can call preventDefault()
+  // and block the browser's own page zoom. React's synthetic onWheel can't do this.
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    setScale((prev) =>
+      Math.min(MAX_SCALE, Math.max(MIN_SCALE, +(prev + delta).toFixed(2))),
+    );
+  }, []);
+
+  useEffect(() => {
+    const el = imageWrapperRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, [handleWheel, lightboxSrc]); // re-attach when lightbox opens
+
+  // ─── DERIVED ────────────────────────────────────────────────────────────────
 
   const filteredIssuances =
     issuanceFilter === "All"
@@ -113,25 +278,41 @@ export default function ResourcesPage() {
 
   const tableRows = gawadKalasagData[activeYear][activeCategory] ?? [];
 
+  // ─── RENDER ─────────────────────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-[#f8f9fb] font-sans text-slate-900 mt-10">
-
-      {/* ── NAV ── */}
-
+    <div className="min-h-screen bg-[#f8f9fb] font-sans text-slate-900">
       {/* ── HERO BANNER ── */}
       <div className="bg-[#002E5D] text-white py-10 px-4">
         <div className="max-w-5xl mx-auto">
-          <p className="text-orange-400 text-xs font-bold uppercase tracking-widest mb-1">PDRRMO Iloilo</p>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Resources</h1>
+          <p className="text-orange-400 text-xs font-bold uppercase tracking-widest mb-1">
+            PDRRMO Iloilo
+          </p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+            Resources
+          </h1>
           <p className="text-blue-200 text-sm max-w-xl">
-            Access hazard maps, official issuances, and Gawad Kalasag recognition records for Iloilo Province.
+            Access hazard maps, official issuances, and Gawad Kalasag
+            recognition records for Iloilo Province.
           </p>
           {/* Quick jump links */}
           <div className="flex flex-wrap gap-3 mt-5">
             {[
-              { href: "#hazard-maps", icon: <Map className="w-3.5 h-3.5" />, label: "Hazard Maps" },
-              { href: "#issuances",   icon: <FileText className="w-3.5 h-3.5" />, label: "Issuances" },
-              { href: "#gawad",       icon: <Award className="w-3.5 h-3.5" />, label: "Gawad Kalasag" },
+              {
+                href: "#hazard-maps",
+                icon: <Map className="w-3.5 h-3.5" />,
+                label: "Hazard Maps",
+              },
+              {
+                href: "#issuances",
+                icon: <FileText className="w-3.5 h-3.5" />,
+                label: "Issuances",
+              },
+              {
+                href: "#gawad",
+                icon: <Award className="w-3.5 h-3.5" />,
+                label: "Gawad Kalasag",
+              },
             ].map((item) => (
               <a
                 key={item.label}
@@ -146,12 +327,13 @@ export default function ResourcesPage() {
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-12 space-y-16">
-
         {/* ══ HAZARD MAPS ══ */}
         <section id="hazard-maps">
           <div className="flex items-center gap-3 mb-6">
             <Map className="w-5 h-5 text-[#F58220]" />
-            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">Hazard Maps</h2>
+            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
+              Hazard Maps
+            </h2>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -167,6 +349,7 @@ export default function ResourcesPage() {
                     src={map.src}
                     alt={map.label}
                     fill
+                    draggable={false}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-[#002E5D]/0 group-hover:bg-[#002E5D]/40 transition-colors duration-200 flex items-center justify-center">
@@ -174,7 +357,9 @@ export default function ResourcesPage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <p className="font-bold text-sm text-[#002E5D]">{map.label}</p>
+                  <p className="font-bold text-sm text-[#002E5D]">
+                    {map.label}
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">{map.desc}</p>
                 </div>
               </div>
@@ -186,7 +371,9 @@ export default function ResourcesPage() {
         <section id="issuances">
           <div className="flex items-center gap-3 mb-6">
             <FileText className="w-5 h-5 text-[#F58220]" />
-            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">Issuances</h2>
+            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
+              Issuances
+            </h2>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -216,10 +403,14 @@ export default function ResourcesPage() {
               >
                 <div className="flex items-center gap-3">
                   <FileText className="w-4 h-4 text-[#002E5D] shrink-0" />
-                  <span className="text-sm text-[#002E5D] font-medium group-hover:underline">{item.label}</span>
+                  <span className="text-sm text-[#002E5D] font-medium group-hover:underline">
+                    {item.label}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">{item.date}</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">
+                    {item.date}
+                  </span>
                   <Download className="w-4 h-4 text-gray-400 group-hover:text-[#002E5D] transition" />
                 </div>
               </a>
@@ -231,7 +422,9 @@ export default function ResourcesPage() {
         <section id="gawad">
           <div className="flex items-center gap-3 mb-6">
             <Award className="w-5 h-5 text-[#F58220]" />
-            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">Gawad Kalasag</h2>
+            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
+              Gawad Kalasag
+            </h2>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -271,31 +464,46 @@ export default function ResourcesPage() {
 
           {/* Table */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Table heading banner */}
-            <div className={`${categoryColor[activeCategory]} text-white px-5 py-3`}>
+            <div
+              className={`${categoryColor[activeCategory]} text-white px-5 py-3`}
+            >
               <p className="text-xs font-bold uppercase tracking-widest opacity-80">
                 {activeYear} Gawad Kalasag — {activeCategory}
               </p>
             </div>
 
             {tableRows.length === 0 ? (
-              <div className="py-10 text-center text-sm text-gray-400">No records for this category and year.</div>
+              <div className="py-10 text-center text-sm text-gray-400">
+                No records for this category and year.
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left px-5 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">Name</th>
-                    <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">Region</th>
-                    <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">Class / Rating</th>
+                    <th className="text-left px-5 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
+                      Name
+                    </th>
+                    <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
+                      Region
+                    </th>
+                    <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
+                      Class / Rating
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {tableRows.map((row, i) => (
                     <tr key={i} className="hover:bg-blue-50 transition">
-                      <td className="px-5 py-3.5 font-medium text-[#002E5D]">{row.name}</td>
-                      <td className="px-4 py-3.5 text-center text-gray-600">{row.region}</td>
+                      <td className="px-5 py-3.5 font-medium text-[#002E5D]">
+                        {row.name}
+                      </td>
+                      <td className="px-4 py-3.5 text-center text-gray-600">
+                        {row.region}
+                      </td>
                       <td className="px-4 py-3.5 text-center">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${ratingBadge[row.classRating] ?? "bg-gray-100 text-gray-600"}`}>
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${ratingBadge[row.classRating] ?? "bg-gray-100 text-gray-600"}`}
+                        >
                           {row.classRating}
                         </span>
                       </td>
@@ -306,82 +514,122 @@ export default function ResourcesPage() {
             )}
           </div>
         </section>
-
       </main>
 
       {/* ── LIGHTBOX ── */}
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-100 bg-black/85 flex items-center justify-center p-6"
-          onClick={() => setLightboxSrc(null)}
+          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-6"
+          onClick={closeLightbox}
         >
-          <button
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition"
-            onClick={() => setLightboxSrc(null)}
+          {/* Controls */}
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+            <button
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition disabled:opacity-30"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((s) => Math.max(MIN_SCALE, +(s - 0.25).toFixed(2)));
+              }}
+              disabled={scale <= MIN_SCALE}
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+
+            <span className="text-white text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full min-w-[52px] text-center">
+              {Math.round(scale * 100)}%
+            </span>
+
+            <button
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition disabled:opacity-30"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((s) => Math.min(MAX_SCALE, +(s + 0.25).toFixed(2)));
+              }}
+              disabled={scale >= MAX_SCALE}
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+
+            <button
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                resetView();
+              }}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
+            <button
+              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition"
+              onClick={closeLightbox}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Hint */}
+          <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs pointer-events-none select-none">
+            Scroll to zoom · Drag to pan
+          </p>
+
+          {/* Image container */}
+          <div
+            className="flex flex-col items-center gap-3"
+            onClick={(e) => e.stopPropagation()}
           >
-            <X className="w-5 h-5" />
-          </button>
-          <div className="max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            <p className="text-white text-sm font-bold mb-3 text-center">{lightboxLabel}</p>
-            <Image
-              src={lightboxSrc}
-              alt={lightboxLabel}
-              width={1200}
-              height={800}
-              className="w-full rounded-xl shadow-2xl object-contain max-h-[80vh]"
-            />
+            <p className="text-white text-sm font-bold text-center">
+              {lightboxLabel}
+            </p>
+
+            {/*
+              ref wrapper receives the non-passive wheel listener.
+              overflow-hidden clips the image when dragged/zoomed beyond bounds.
+              Inner div carries the transform — scale + translate applied together.
+            */}
+            <div
+              ref={imageWrapperRef}
+              className="relative overflow-hidden rounded-xl shadow-2xl"
+              style={{
+                width: "min(90vw, 900px)",
+                height: "min(80vh, 650px)",
+                cursor: isDragging
+                  ? "grabbing"
+                  : scale > 1
+                    ? "grab"
+                    : "default",
+              }}
+            >
+              <div
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                  transformOrigin: "center center",
+                  // Smooth transition for button zoom, instant for drag
+                  transition: isDragging ? "none" : "transform 0.15s ease",
+                  width: "100%",
+                  height: "100%",
+                  position: "relative",
+                }}
+              >
+                <Image
+                  src={lightboxSrc}
+                  alt={lightboxLabel}
+                  fill
+                  draggable={false}
+                  className="object-contain select-none"
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white border-t border-gray-200 pt-12 pb-6">
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-10 border-b border-gray-100 pb-10 mb-7">
-          <div className="flex items-start gap-4">
-            <div className="flex gap-3 shrink-0">
-              <Image src="/IPG Logo.png"   alt="Provincial Government Logo" width={40} height={40} />
-              <Image src="/PDRRMO Logo.png" alt="PDRRMO Logo"               width={40} height={40} />
-              <Image src="/PCDAC.png"       alt="Community Defense Logo"    width={40} height={40} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-black uppercase text-gray-400">Official Seal</p>
-              <p className="text-xs font-bold text-[#002E5D]">Iloilo Provincial Government</p>
-              <p className="text-xs font-bold text-[#002E5D]">Iloilo Provincial Disaster Risk Reduction and Management Office</p>
-              <p className="text-xs font-bold text-[#002E5D]">Provincial Community Defense Action Center - Iloilo</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Contact Us
-            </h4>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              3rd Floor, Left Wing, Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City
-            </p>
-            <p className="text-xs text-gray-600">(033) 338-7951 | 338-7956</p>
-            <p className="text-xs text-gray-600 underline">pdrrmo.iloilo@yahoo.com.ph</p>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2">
-              <FaFacebookF className="w-4 h-4" /> Follow Us
-            </h4>
-            <div className="space-y-2">
-              <a href="https://www.facebook.com/Heman201"   target="_blank" rel="noreferrer noopener" className="block text-xs text-gray-600 font-bold underline">Operation Center PDRRMO Iloilo</a>
-              <a href="https://www.facebook.com/iloilopdrrmo" target="_blank" rel="noreferrer noopener" className="block text-xs text-gray-600 font-bold underline">Provincial Disaster Risk Reduction and Management Office - Iloilo</a>
-            </div>
-            <h4 className="text-xs font-black uppercase text-gray-500 flex items-center gap-2 mt-4">
-              <Globe className="w-4 h-4" /> Portals
-            </h4>
-            <p className="text-xs text-gray-600 font-bold underline">Iloilo.gov.ph</p>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-gray-400 font-bold uppercase">
-          <p>Developed by: PDRRMO Research and Planning Intern (Batch 2025)</p>
-          <p>© 2024 All Rights Reserved</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
