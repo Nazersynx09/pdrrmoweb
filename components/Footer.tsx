@@ -15,14 +15,14 @@ export default function Footer() {
                 alt="Provincial Government Logo"
                 width={48}
                 height={48}
-                className="w-12 h-12 bg-white rounded-lg p-1"
+              
               />
               <Image
                 src="/pdrrmoLogo.png"
                 alt="PDRRMO Logo"
                 width={48}
                 height={48}
-                className="w-12 h-12 bg-white rounded-lg p-1"
+            
               />
             </div>
           </div>
@@ -37,7 +37,7 @@ export default function Footer() {
             <a
               href="https://www.facebook.com/Heman201"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#F58220] transition-colors"
             >
               <FaFacebookF className="w-5 h-5" />
