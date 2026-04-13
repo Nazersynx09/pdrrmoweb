@@ -19,7 +19,8 @@ const slides: Slide[] = [
     title: "EARTHQUAKE PREPAREDNESS",
     type: "Safety Guide",
     image: "/FloodIEC.png",
-    description: "Learn essential earthquake safety tips and preparedness measures",
+    description:
+      "Learn essential earthquake safety tips and preparedness measures",
     cta: "Download Guide",
     ctaLink: "/resources",
   },
@@ -27,7 +28,8 @@ const slides: Slide[] = [
     title: "FLOOD SAFETY",
     type: "Water Level Advisory",
     image: "/FloodIEC.png",
-    description: "Stay safe during flooding events - know your evacuation routes",
+    description:
+      "Stay safe during flooding events - know your evacuation routes",
     cta: "View Hazard Maps",
     ctaLink: "/resources",
   },
@@ -85,7 +87,7 @@ export default function Carousel() {
             {slides.map((slide, i) => (
               <div
                 key={i}
-                className="min-w-full h-full relative flex items-center justify-center"
+                className="min-w-full h-100 relative flex items-center justify-center"
               >
                 <Image
                   src={slide.image}

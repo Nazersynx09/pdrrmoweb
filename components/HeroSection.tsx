@@ -14,7 +14,7 @@ export default function HeroSection({
   address,
 }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden bg-[#001f45] pt-16 h-screen">
+    <section className="relative overflow-hidden bg-[#001f45] md:pt-16 md:h-screen">
       <div className="absolute inset-0 bg-linear-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
 
       <div className="absolute inset-0 overflow-hidden">

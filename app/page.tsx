@@ -60,18 +60,9 @@ const contactInfo = {
 };
 
 export default function Home() {
-  const [activeAlert, setActiveAlert] = useState<number>(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveAlert((prev) => (prev + 1) % alerts.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [alerts.length]);
-
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
-      <AlertBanner alerts={alerts} activeAlert={activeAlert} />
+      <AlertBanner />
       <HeroSection
         phone={contactInfo.phone}
         email={contactInfo.email}
