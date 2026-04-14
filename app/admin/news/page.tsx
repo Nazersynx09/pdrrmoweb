@@ -1,7 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Eye, Search, Filter, ArrowUpDown } from 'lucide-react';
+import { useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  Search,
+  Filter,
+  ArrowUpDown,
+} from "lucide-react";
+import ContentEditor, { ContentBlock } from "@/components/admin/ContentEditor";
+import ImageUpload from "@/components/ImageUpload";
 
 interface NewsItem {
   id: string;
@@ -10,7 +20,7 @@ interface NewsItem {
   content: string;
   featured_image: string;
   excerpt: string;
-  status: 'draft' | 'published' | 'archived';
+  status: "draft" | "published" | "archived";
   author_id: string;
   published_at: string;
   created_at: string;
@@ -18,40 +28,43 @@ interface NewsItem {
 
 const initialNews: NewsItem[] = [
   {
-    id: '1',
-    title: 'GAD Meeting on Strengthening Protection for Women and Children',
-    slug: 'gad-meeting-strengthening-protection-women-children',
-    content: 'The Gender and Development (GAD) Meeting focused on strengthening protection measures for women and children in disaster-prone areas.',
-    featured_image: '/gadMeeting.jpg',
-    excerpt: 'Key stakeholders gathered to discuss protection measures.',
-    status: 'published',
-    author_id: 'admin',
-    published_at: '2026-04-10T10:00:00Z',
-    created_at: '2026-04-10T10:00:00Z',
+    id: "1",
+    title: "GAD Meeting on Strengthening Protection for Women and Children",
+    slug: "gad-meeting-strengthening-protection-women-children",
+    content:
+      "The Gender and Development (GAD) Meeting focused on strengthening protection measures for women and children in disaster-prone areas.",
+    featured_image: "/gadMeeting.jpg",
+    excerpt: "Key stakeholders gathered to discuss protection measures.",
+    status: "published",
+    author_id: "admin",
+    published_at: "2026-04-10T10:00:00Z",
+    created_at: "2026-04-10T10:00:00Z",
   },
   {
-    id: '2',
-    title: 'PDRRMO Conducts Emergency Response Training',
-    slug: 'pdrrmo-conduct-emergency-response-training',
-    content: 'A comprehensive emergency response training was conducted for all PDRRMO personnel.',
-    featured_image: '/training.jpg',
-    excerpt: 'Personnel undergo intensive emergency response training.',
-    status: 'draft',
-    author_id: 'admin',
-    published_at: '',
-    created_at: '2026-04-12T14:30:00Z',
+    id: "2",
+    title: "PDRRMO Conducts Emergency Response Training",
+    slug: "pdrrmo-conduct-emergency-response-training",
+    content:
+      "A comprehensive emergency response training was conducted for all PDRRMO personnel.",
+    featured_image: "/training.jpg",
+    excerpt: "Personnel undergo intensive emergency response training.",
+    status: "draft",
+    author_id: "admin",
+    published_at: "",
+    created_at: "2026-04-12T14:30:00Z",
   },
   {
-    id: '3',
-    title: 'Flood Preparedness Seminar for Baranggay Officials',
-    slug: 'flood-preparedness-seminar-baranggay-officials',
-    content: 'Seminar focused on flood preparedness and evacuation protocols for baranggay officials.',
-    featured_image: '/seminar.jpg',
-    excerpt: 'Baranggay officials learn flood preparedness strategies.',
-    status: 'published',
-    author_id: 'admin',
-    published_at: '2026-04-08T09:00:00Z',
-    created_at: '2026-04-08T09:00:00Z',
+    id: "3",
+    title: "Flood Preparedness Seminar for Baranggay Officials",
+    slug: "flood-preparedness-seminar-baranggay-officials",
+    content:
+      "Seminar focused on flood preparedness and evacuation protocols for baranggay officials.",
+    featured_image: "/seminar.jpg",
+    excerpt: "Baranggay officials learn flood preparedness strategies.",
+    status: "published",
+    author_id: "admin",
+    published_at: "2026-04-08T09:00:00Z",
+    created_at: "2026-04-08T09:00:00Z",
   },
 ];
 
@@ -59,47 +72,64 @@ export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>(initialNews);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<NewsItem | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    excerpt: '',
-    featured_image: '',
-    status: 'draft' as 'draft' | 'published' | 'archived',
+    title: "",
+    content: "",
+    excerpt: "",
+    featured_image: "",
+    status: "draft" as "draft" | "published" | "archived",
   });
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
 
-  const filteredNews = news.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+  const filteredNews = news.filter((item) => {
+    const matchesSearch = item.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || item.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (editingItem) {
-      setNews(news.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData, updated_at: new Date().toISOString() }
-          : item
-      ));
+      setNews(
+        news.map((item) =>
+          item.id === editingItem.id
+            ? { ...item, ...formData, updated_at: new Date().toISOString() }
+            : item,
+        ),
+      );
     } else {
       const newItem: NewsItem = {
         id: Date.now().toString(),
         ...formData,
-        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-        author_id: 'admin',
-        published_at: formData.status === 'published' ? new Date().toISOString() : '',
+        slug: formData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+        author_id: "admin",
+        published_at:
+          formData.status === "published" ? new Date().toISOString() : "",
         created_at: new Date().toISOString(),
       };
       setNews([newItem, ...news]);
     }
-    
+
     setShowForm(false);
     setEditingItem(null);
-    setFormData({ title: '', content: '', excerpt: '', featured_image: '', status: 'draft' });
+    setFormData({
+      title: "",
+      content: "",
+      excerpt: "",
+      featured_image: "",
+      status: "draft",
+    });
+    setContentBlocks([]);
   };
 
   const handleEdit = (item: NewsItem) => {
@@ -111,39 +141,100 @@ export default function NewsPage() {
       featured_image: item.featured_image,
       status: item.status,
     });
+
+    const parsedBlocks: ContentBlock[] = parseContentToBlocks(item.content);
+    setContentBlocks(parsedBlocks);
     setShowForm(true);
   };
 
+  const parseContentToBlocks = (content: string): ContentBlock[] => {
+    if (!content) return [{ id: "1", type: "paragraph", content: "" }];
+
+    const blocks: ContentBlock[] = [];
+    const parts = content.split("\n\n");
+
+    parts.forEach((part, index) => {
+      if (part.startsWith("## ")) {
+        blocks.push({
+          id: String(index),
+          type: "heading",
+          content: part.replace("## ", ""),
+        });
+      } else if (part.startsWith("> ")) {
+        blocks.push({
+          id: String(index),
+          type: "quote",
+          content: part.replace("> ", ""),
+        });
+      } else if (part.startsWith("- ")) {
+        blocks.push({
+          id: String(index),
+          type: "bullet",
+          content: part.replace("- ", ""),
+        });
+      } else if (part.match(/^\d+\.\s/)) {
+        blocks.push({
+          id: String(index),
+          type: "numbered",
+          content: part.replace(/^\d+\.\s/, ""),
+        });
+      } else if (part.match(/^!\[.*\]\(.*\)$/)) {
+        const match = part.match(/^!\[(.*)\]\((.*)\)$/);
+        blocks.push({
+          id: String(index),
+          type: "image",
+          content: "",
+          imageCaption: match?.[1] || "",
+          imageUrl: match?.[2] || "",
+        });
+      } else if (part.trim()) {
+        blocks.push({ id: String(index), type: "paragraph", content: part });
+      }
+    });
+
+    return blocks.length > 0
+      ? blocks
+      : [{ id: "1", type: "paragraph", content: "" }];
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this news item?')) {
-      setNews(news.filter(item => item.id !== id));
+    if (confirm("Are you sure you want to delete this news item?")) {
+      setNews(news.filter((item) => item.id !== id));
     }
   };
 
   const handlePublish = (id: string) => {
-    setNews(news.map(item => 
-      item.id === id 
-        ? { ...item, status: 'published' as const, published_at: new Date().toISOString() }
-        : item
-    ));
+    setNews(
+      news.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: "published" as const,
+              published_at: new Date().toISOString(),
+            }
+          : item,
+      ),
+    );
   };
 
   const handleArchive = (id: string) => {
-    setNews(news.map(item => 
-      item.id === id 
-        ? { ...item, status: 'archived' as const }
-        : item
-    ));
+    setNews(
+      news.map((item) =>
+        item.id === id ? { ...item, status: "archived" as const } : item,
+      ),
+    );
   };
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      published: 'bg-green-100 text-green-800',
-      draft: 'bg-yellow-100 text-yellow-800',
-      archived: 'bg-gray-100 text-gray-800',
+      published: "bg-green-100 text-green-800",
+      draft: "bg-yellow-100 text-yellow-800",
+      archived: "bg-gray-100 text-gray-800",
     };
     return (
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
+      <span
+        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -160,7 +251,13 @@ export default function NewsPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ title: '', content: '', excerpt: '', featured_image: '', status: 'draft' });
+            setFormData({
+              title: "",
+              content: "",
+              excerpt: "",
+              featured_image: "",
+              status: "draft",
+            });
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -205,16 +302,27 @@ export default function NewsPage() {
                     Title <ArrowUpDown className="w-4 h-4" />
                   </button>
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Excerpt</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Date</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  Excerpt
+                </th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  Status
+                </th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  Date
+                </th>
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredNews.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
                     No news items found
                   </td>
                 </tr>
@@ -223,18 +331,20 @@ export default function NewsPage() {
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-4 py-4">
                       <div>
-                        <p className="font-medium text-gray-900">{item.title}</p>
+                        <p className="font-medium text-gray-900">
+                          {item.title}
+                        </p>
                         <p className="text-sm text-gray-500">{item.slug}</p>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-600 max-w-xs truncate">
                       {item.excerpt}
                     </td>
-                    <td className="px-4 py-4">
-                      {getStatusBadge(item.status)}
-                    </td>
+                    <td className="px-4 py-4">{getStatusBadge(item.status)}</td>
                     <td className="px-4 py-4 text-sm text-gray-600">
-                      {item.published_at ? new Date(item.published_at).toLocaleDateString() : '—'}
+                      {item.published_at
+                        ? new Date(item.published_at).toLocaleDateString()
+                        : "—"}
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
@@ -245,7 +355,7 @@ export default function NewsPage() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        {item.status !== 'published' && (
+                        {item.status !== "published" && (
                           <button
                             onClick={() => handlePublish(item.id)}
                             className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
@@ -254,7 +364,7 @@ export default function NewsPage() {
                             <Eye className="w-4 h-4" />
                           </button>
                         )}
-                        {item.status !== 'archived' && (
+                        {item.status !== "archived" && (
                           <button
                             onClick={() => handleArchive(item.id)}
                             className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -282,10 +392,10 @@ export default function NewsPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl">
               <h2 className="text-lg font-semibold text-gray-900">
-                {editingItem ? 'Edit News' : 'Add News'}
+                {editingItem ? "Edit News" : "Add News"}
               </h2>
               <button
                 onClick={() => {
@@ -297,59 +407,91 @@ export default function NewsPage() {
                 ×
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Title
+                </label>
                 <input
                   type="text"
                   required
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-gray-900 placeholder:text-gray-400"
                   placeholder="Enter news title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Excerpt
+                </label>
                 <textarea
                   value={formData.excerpt}
-                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                  onChange={(e) =>
+                    setFormData({ ...formData, excerpt: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-gray-900 placeholder:text-gray-400"
                   rows={2}
                   placeholder="Brief summary of the news"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                <textarea
-                  required
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                  rows={6}
-                  placeholder="Full news content"
+                <label className="block text-sm font-medium text-black mb-1">
+                  Content
+                </label>
+                <ContentEditor
+                  initialBlocks={contentBlocks}
+                  onChange={(blocks) => {
+                    setContentBlocks(blocks);
+                    setFormData((prev: typeof formData) => ({
+                      ...prev,
+                      content: blocks
+                        .map((b) => {
+                          if (b.type === "paragraph") return b.content;
+                          if (b.type === "heading") return `## ${b.content}`;
+                          if (b.type === "image")
+                            return `![${b.imageCaption || ""}](${b.imageUrl})`;
+                          if (b.type === "quote") return `> ${b.content}`;
+                          if (b.type === "bullet") return `- ${b.content}`;
+                          if (b.type === "numbered") return `1. ${b.content}`;
+                          return b.content;
+                        })
+                        .join("\n\n"),
+                    }));
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-black mb-1">
+                  Featured Image
+                </label>
+                <ImageUpload
                   value={formData.featured_image}
-                  onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                  placeholder="/images/news/example.jpg"
+                  onChange={(url) => setFormData({ ...formData, featured_image: url })}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Status
+                </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'draft' | 'published' | 'archived' })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as
+                        | "draft"
+                        | "published"
+                        | "archived",
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
                 >
                   <option value="draft">Draft</option>
@@ -365,7 +507,7 @@ export default function NewsPage() {
                     setShowForm(false);
                     setEditingItem(null);
                   }}
-                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-black border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -373,7 +515,7 @@ export default function NewsPage() {
                   type="submit"
                   className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
                 >
-                  {editingItem ? 'Update' : 'Create'}
+                  {editingItem ? "Update" : "Create"}
                 </button>
               </div>
             </form>
