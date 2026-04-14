@@ -15,14 +15,14 @@ export default function Footer() {
                 alt="Provincial Government Logo"
                 width={48}
                 height={48}
-                className="w-12 h-12 bg-white rounded-lg p-1"
+              
               />
               <Image
                 src="/pdrrmoLogo.png"
                 alt="PDRRMO Logo"
                 width={48}
                 height={48}
-                className="w-12 h-12 bg-white rounded-lg p-1"
+            
               />
             </div>
           </div>
@@ -33,15 +33,33 @@ export default function Footer() {
             Building a disaster-resilient Province of Iloilo through proactive planning, 
             community engagement, and rapid response capabilities.
           </p>
-          <div className="flex gap-4 mt-4">
+          <div className="flex gap-4 mt-5">
             <a
-              href="https://www.facebook.com/Heman201"
-              target="_blank"
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#F58220] transition-colors"
+              // href="https://www.facebook.com/Heman201"
+              // target="_blank"
+              // rel="noreferrer noopener"
+              // className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#F58220] transition-colors"
             >
               <FaFacebookF className="w-5 h-5" />
             </a>
+            <div className="flex flex-col gap-2">
+            <a
+              href="https://www.facebook.com/iloilopdrrmo"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-xs hover:text-[#F58220] transition-colors"
+            >
+              Provincial Disaster Risk Reduction and Management Office - Iloilo
+            </a>
+            <a
+              href="https://www.facebook.com/heman201"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-xs hover:text-[#F58220] transition-colors"
+            >
+              Operation Center PDRRMO - Iloilo
+            </a>
+            </div>
           </div>
         </div>
 
@@ -87,7 +105,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400 font-bold uppercase">
         <p>© 2026 PDRRMO Iloilo. All Rights Reserved.</p>
-        <p>Developed by: PDRRMO Research and Planning Intern</p>
+        <p>Developed by: PDRRMO Research and Planning Intern Batch 2025 & 2026</p>
       </div>
     </footer>
   );

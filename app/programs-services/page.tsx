@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { 
-  ChevronDown, Clock, FileText, Users, ExternalLink, 
-  ArrowRight, Search, Filter, MapPin, Shield, AlertTriangle,
-  CheckCircle2, Circle
+  ChevronDown, Clock, FileText, 
+  ArrowRight, Search, Shield, CheckCircle2
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
@@ -270,9 +269,10 @@ export default function ProgramServices() {
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-[140px] px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
+                className={`flex-1 min-w-140px px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
                   activeTab === tab.id
                     ? "bg-[#002E5D] text-white shadow-md"
                     : "text-gray-600 hover:bg-gray-100"
@@ -312,6 +312,7 @@ export default function ProgramServices() {
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <button
+                    type="button"
                     onClick={() => setExpandedId(isExpanded ? null : item.id)}
                     aria-expanded={isExpanded}
                     className="w-full flex items-center justify-between gap-4 p-5 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#F58220]"
@@ -337,7 +338,7 @@ export default function ProgramServices() {
                     </div>
                   </button>
 
-                  <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? "max-h-[500px]" : "max-h-0"}`}>
+                  <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? "max-h-500px" : "max-h-0"}`}>
                     <div className="px-5 pb-5 border-t border-gray-100">
                       <p className="text-gray-600 mt-4 leading-relaxed">
                         {item.description}
@@ -376,7 +377,7 @@ export default function ProgramServices() {
         </div>
 
         {/* Contact Card */}
-        <div className="bg-gradient-to-r from-[#002E5D] to-[#001a38] rounded-xl shadow-lg p-8 mt-12 text-white">
+        <div className="bg-linear-to-r from-[#002E5D] to-[#001a38] rounded-xl shadow-lg p-8 mt-12 text-white">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="text-xl font-bold mb-2">Need More Information?</h3>

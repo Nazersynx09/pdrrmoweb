@@ -93,14 +93,14 @@ export default function UpdatesSection({
           </div>
 
           <div className="rounded-xl overflow-hidden shadow-md bg-white">
-            <div className="relative h-48">
+            <div className="relative h-100">
               <Image
                 src={activityImage}
                 alt="Recent Activities"
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <p className="text-xs font-semibold text-orange-300 uppercase">
                   {activityDate}
@@ -112,7 +112,7 @@ export default function UpdatesSection({
             </div>
             <div className="p-4">
               <Link href={activityLink} className="text-sm font-bold text-[#002E5D] hover:text-[#F58220] flex items-center gap-1">
-                View Programs <ArrowRight className="w-4 h-4" />
+                View Activity <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -157,7 +157,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
               rel="noreferrer noopener"
               className="text-blue-300 text-xs hover:underline"
             >
-              @Heman201
+              @Operation Center - PDRRMO ILOILO
             </a>
           </div>
         </div>
@@ -176,7 +176,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
         </p>
       </div>
 
-      <div className="relative flex justify-center bg-gray-50 p-3 min-h-[500px]">
+      <div className="relative flex justify-center bg-gray-50 p-3 min-h-500px">
         {!iframeLoaded && (
           <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
             <div className="flex items-center gap-3">

@@ -56,7 +56,8 @@ const issuances = [
 const contactInfo = {
   phone: "(033) 328-7920",
   email: "pdrrmo@iloilo.gov.ph",
-  address: "Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City",
+  address1: "Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City",
+  address2: "Magsaysay Village, Lapaz, Iloilo",
 };
 
 export default function Home() {
@@ -66,7 +67,8 @@ export default function Home() {
       <HeroSection
         phone={contactInfo.phone}
         email={contactInfo.email}
-        address={contactInfo.address}
+        address1={contactInfo.address1}
+        address2={contactInfo.address2}
       />
       <StatsSection />
       <QuickActions />

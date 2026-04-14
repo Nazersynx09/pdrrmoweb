@@ -7,7 +7,7 @@ interface StatItem {
 }
 
 const stats: StatItem[] = [
-  { value: "51", label: "Municipal DRRMOs", icon: Users },
+  { value: "42", label: "Municipal DRRMOs", icon: Users },
   { value: "24/7", label: "Operation Center", icon: Clock },
   { value: "100+", label: "Evacuation Sites", icon: Shield },
   { value: "2.5M+", label: "Protected Population", icon: TrendingUp },
