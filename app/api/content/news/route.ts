@@ -26,6 +26,54 @@ let newsItems: News[] = [
     published_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
   },
+  {
+    id: '2',
+    title: 'PDRRMO Conducts Emergency Response Training for All Personnel',
+    slug: 'pdrrmo-conduct-emergency-response-training',
+    content: 'A comprehensive emergency response training was conducted for all PDRRMO personnel to enhance disaster response capabilities.',
+    featured_image: '/training.jpg',
+    excerpt: 'Personnel undergo intensive emergency response training.',
+    status: 'published',
+    author_id: 'admin',
+    published_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '3',
+    title: 'Flood Preparedness Seminar for Baranggay Officials',
+    slug: 'flood-preparedness-seminar-baranggay-officials',
+    content: 'Seminar focused on flood preparedness and evacuation protocols for baranggay officials across the province.',
+    featured_image: '/seminar.jpg',
+    excerpt: 'Baranggay officials learn flood preparedness strategies.',
+    status: 'published',
+    author_id: 'admin',
+    published_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '4',
+    title: 'Typhoon Preparedness Guidelines Updated for 2026',
+    slug: 'typhoon-preparedness-guidelines-2026',
+    content: 'Updated guidelines for typhoon preparedness have been released to ensure public safety during the typhoon season.',
+    featured_image: '/typhoon.jpg',
+    excerpt: 'New preparedness guidelines released for typhoon season.',
+    status: 'published',
+    author_id: 'admin',
+    published_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: '5',
+    title: 'Earthquake Drill Conducted in Provincial Capitol',
+    slug: 'earthquake-drill-provincial-capitol',
+    content: 'A province-wide earthquake drill was conducted to test emergency response and evacuation procedures.',
+    featured_image: '/earthquake.jpg',
+    excerpt: 'Province-wide earthquake drill tests emergency response.',
+    status: 'published',
+    author_id: 'admin',
+    published_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+  },
 ];
 
 function generateSlug(title: string): string {
@@ -36,9 +84,26 @@ function generateSlug(title: string): string {
     .substring(0, 50);
 }
 
-// GET - Public: List published news
-export async function GET() {
+// GET - Public: List published news or fetch single by slug
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get('slug');
+
+    if (slug) {
+      const newsItem = newsItems.find(n => n.slug === slug && n.status === 'published');
+      if (!newsItem) {
+        return NextResponse.json(
+          { success: false, error: 'News not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        data: newsItem
+      });
+    }
+
     const publishedNews = newsItems
       .filter(n => n.status === 'published')
       .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());

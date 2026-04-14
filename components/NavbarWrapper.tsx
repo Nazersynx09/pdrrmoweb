@@ -11,6 +11,8 @@ export default function NavbarWrapper({
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const isNewsRoute = pathname.startsWith("/news");
+  const isNavSkip = isAdminRoute || isNewsRoute;
 
   if (isAdminRoute) {
     return <>{children}</>;
