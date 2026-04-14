@@ -20,7 +20,6 @@ export default function NavbarWrapper({
     <>
       <Navbar />
       <main className="flex-1 pt-16">{children}</main>
-      <Footer />
     </>
   );
 }

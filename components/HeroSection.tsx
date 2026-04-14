@@ -5,13 +5,17 @@ import { Phone, Mail, LocateIcon, ArrowRight, MapPin } from "lucide-react";
 interface HeroSectionProps {
   phone: string;
   email: string;
-  address: string;
+  address1: string;
+  address2: string;
+
 }
 
 export default function HeroSection({
   phone,
   email,
-  address,
+  address1,
+  address2,
+
 }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden bg-[#001f45] md:pt-8 md:h-100vh">
@@ -72,14 +76,19 @@ export default function HeroSection({
             <p className="text-sm font-semibold break-all">{email}</p>
           </div>
           <div className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-xl backdrop-blur-sm">
-            <div className="flex items-center gap-3 text-orange-200 mb-2">
+          <div className="flex gap-3 text-orange-200 mb-2 flex-col">
+            <div className="flex gap-2">
               <LocateIcon className="h-5 w-5" />
               <span className="text-xs font-bold uppercase tracking-widest">
                 Location
               </span>
             </div>
-            <p className="font-semibold text-sm">{address}</p>
+            <div className="flex flex-col gap-1  text-white">
+              <p className="text-sm font-semibold break-all">{address1}</p>
+              <p className="text-sm font-semibold break-all">{address2}</p>
+            </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

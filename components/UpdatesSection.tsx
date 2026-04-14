@@ -93,7 +93,7 @@ export default function UpdatesSection({
           </div>
 
           <div className="rounded-xl overflow-hidden shadow-md bg-white">
-            <div className="relative h-48">
+            <div className="relative h-100">
               <Image
                 src={activityImage}
                 alt="Recent Activities"
@@ -112,7 +112,7 @@ export default function UpdatesSection({
             </div>
             <div className="p-4">
               <Link href={activityLink} className="text-sm font-bold text-[#002E5D] hover:text-[#F58220] flex items-center gap-1">
-                View Programs <ArrowRight className="w-4 h-4" />
+                View Activity <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
