@@ -176,7 +176,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
         </p>
       </div>
 
-      <div className="relative flex justify-center bg-gray-50 p-3 min-h-500px">
+      <div className="relative flex justify-center bg-gray-50 p-3 min-h-900px">
         {!iframeLoaded && (
           <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
             <div className="flex items-center gap-3">
