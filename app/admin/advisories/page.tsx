@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Advisory {
   id: string;
   title: string;
   content: string;
+  image: string;
   severity: 'info' | 'warning' | 'watch' | 'critical';
   valid_from: string;
   valid_until: string;
@@ -19,6 +21,7 @@ const initialAdvisories: Advisory[] = [
     id: '1',
     title: 'Southwest Monsoon Advisory',
     content: 'The southwest monsoon season continues to affect the region. Please prepare emergency kits and know your evacuation routes.',
+    image: '',
     severity: 'warning',
     valid_from: '2026-04-13T00:00:00Z',
     valid_until: '2026-04-20T00:00:00Z',
@@ -29,6 +32,7 @@ const initialAdvisories: Advisory[] = [
     id: '2',
     title: 'Flood Monitoring Update',
     content: 'Flooding occurs in low-lying areas. Avoid crossing flooded roads.',
+    image: '',
     severity: 'watch',
     valid_from: '2026-04-13T00:00:00Z',
     valid_until: '2026-04-16T00:00:00Z',
@@ -39,6 +43,7 @@ const initialAdvisories: Advisory[] = [
     id: '3',
     title: 'General Weather Advisory',
     content: 'Fair weather conditions expected. No major weather disturbances forecasted.',
+    image: '',
     severity: 'info',
     valid_from: '2026-04-13T00:00:00Z',
     valid_until: '2026-04-15T00:00:00Z',
@@ -57,6 +62,7 @@ export default function AdvisoriesPage() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    image: '',
     severity: 'info' as 'info' | 'warning' | 'watch' | 'critical',
     valid_from: '',
     valid_until: '',
@@ -89,7 +95,7 @@ export default function AdvisoriesPage() {
     
     setShowForm(false);
     setEditingItem(null);
-    setFormData({ title: '', content: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
+    setFormData({ title: '', content: '', image: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
   };
 
   const handleEdit = (item: Advisory) => {
@@ -97,6 +103,7 @@ export default function AdvisoriesPage() {
     setFormData({
       title: item.title,
       content: item.content,
+      image: item.image || '',
       severity: item.severity,
       valid_from: item.valid_from.split('T')[0],
       valid_until: item.valid_until.split('T')[0],
@@ -150,7 +157,7 @@ export default function AdvisoriesPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ title: '', content: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
+            setFormData({ title: '', content: '', image: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -260,7 +267,7 @@ export default function AdvisoriesPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingItem ? 'Edit Advisory' : 'Add Advisory'}
@@ -298,6 +305,14 @@ export default function AdvisoriesPage() {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
                   rows={4}
                   placeholder="Advisory details"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
+                <ImageUpload
+                  value={formData.image}
+                  onChange={(url) => setFormData({ ...formData, image: url })}
                 />
               </div>
 

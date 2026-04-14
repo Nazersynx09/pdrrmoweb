@@ -95,6 +95,9 @@ export default function Navbar() {
             )}
           </div>
 
+          <Link href="/news" className="hover:text-[#F58220] transition">
+            News
+          </Link>
           <Link href="/programs-services" className="hover:text-[#F58220] transition">
             Programs and Services
           </Link>
@@ -184,6 +187,7 @@ export default function Navbar() {
                 </div>
 
             {[
+              ["News", "/news"],
               ["Programs and Services", "/programs-services"],
               ["Resources", "/resources"],
               ["Operation Center", "/operation-center"],

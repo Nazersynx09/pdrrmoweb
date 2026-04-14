@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, FileUp, ExternalLink } from 'lucide-react';
+import FileUpload from '@/components/FileUpload';
 
 interface Issuance {
   id: string;
@@ -293,7 +294,7 @@ export default function IssuancesPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-xl">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingItem ? 'Edit Issuance' : 'Add Issuance'}
@@ -374,14 +375,11 @@ export default function IssuancesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">File URL</label>
-                <input
-                  type="text"
-                  required
+                <label className="block text-sm font-medium text-gray-700 mb-1">File (PDF or Image)</label>
+                <FileUpload
                   value={formData.file_url}
-                  onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                  placeholder="/issuances/example.pdf"
+                  onChange={(url) => setFormData({ ...formData, file_url: url })}
+                  accept=".pdf,.jpg,.jpeg,.png"
                 />
               </div>
 
