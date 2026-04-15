@@ -99,7 +99,7 @@ const issuances = [
 ];
 
 type GKYear = "2024" | "2023" | "2022";
-type GKCategory = "Special Awards" | "Hall of Fame" | "Search Results";
+type GKCategory = "Special Awards";
 
 const gawadKalasagData: Record<
   GKYear,
@@ -108,66 +108,44 @@ const gawadKalasagData: Record<
   "2024": {
     "Special Awards": [
       {
-        name: "Taekwondo Iloilo Province Dragons Brigade, Inc.",
-        region: "VI",
-        classRating: "SA-GK",
+        name: "Gawad Kalasag 2023 - DRRM",
+        region: "National",
+        classRating: "Bronze Awardee",
       },
       {
-        name: "Iloilo Provincial DRRM Council",
-        region: "VI",
-        classRating: "SA-GK",
+        name: "Resculympics 2024 - DRRM Olympics",
+        region: "Regional",
+        classRating: "Champion",
       },
     ],
-    "Hall of Fame": [
-      { name: "Municipality of Pavia", region: "VI", classRating: "HF-GK" },
-      { name: "Municipality of Leganes", region: "VI", classRating: "HF-GK" },
-    ],
-    "Search Results": [
-      { name: "Municipality of Maasin", region: "VI", classRating: "Gold" },
-      { name: "Municipality of Calinog", region: "VI", classRating: "Silver" },
-      { name: "Municipality of Igbaras", region: "VI", classRating: "Bronze" },
-    ],
+    
+    
   },
   "2023": {
     "Special Awards": [
       { name: "Iloilo Rescue Team Alpha", region: "VI", classRating: "SA-GK" },
     ],
-    "Hall of Fame": [
-      { name: "Municipality of Dumangas", region: "VI", classRating: "HF-GK" },
-    ],
-    "Search Results": [
-      { name: "Municipality of Badiangan", region: "VI", classRating: "Gold" },
-      { name: "Municipality of Oton", region: "VI", classRating: "Silver" },
-    ],
+    
   },
   "2022": {
     "Special Awards": [
       {
-        name: "Provincial Rescue Task Force",
-        region: "VI",
-        classRating: "SA-GK",
+        name: "Provincial EROI Team",
+        region: "Local",
+        classRating: "Recognition",
       },
     ],
-    "Hall of Fame": [
-      { name: "Municipality of Anilao", region: "VI", classRating: "HF-GK" },
-    ],
-    "Search Results": [
-      { name: "Municipality of Cabatuan", region: "VI", classRating: "Gold" },
-    ],
+    
   },
 };
 
 const gkYears: GKYear[] = ["2024", "2023", "2022"];
 const gkCategories: GKCategory[] = [
   "Special Awards",
-  "Hall of Fame",
-  "Search Results",
 ];
 
 const categoryColor: Record<GKCategory, string> = {
   "Special Awards": "bg-[#002E5D]",
-  "Hall of Fame": "bg-amber-600",
-  "Search Results": "bg-emerald-700",
 };
 
 const ratingBadge: Record<string, string> = {
@@ -423,7 +401,7 @@ export default function ResourcesPage() {
           <div className="flex items-center gap-3 mb-6">
             <Award className="w-5 h-5 text-[#F58220]" />
             <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
-              Gawad Kalasag
+              Awards and Recognitions
             </h2>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
@@ -441,23 +419,6 @@ export default function ResourcesPage() {
                 }`}
               >
                 {yr}
-              </button>
-            ))}
-          </div>
-
-          {/* Category tabs */}
-          <div className="flex flex-wrap gap-2 mb-5">
-            {gkCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded text-xs font-bold uppercase tracking-wide border-2 transition ${
-                  activeCategory === cat
-                    ? `${categoryColor[cat]} text-white border-transparent`
-                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                }`}
-              >
-                {cat}
               </button>
             ))}
           </div>
@@ -519,7 +480,7 @@ export default function ResourcesPage() {
       {/* ── LIGHTBOX ── */}
       {lightboxSrc && (
         <div
-          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-6"
+          className="fixed inset-0 z-100 bg-black/85 flex items-center justify-center p-6"
           onClick={closeLightbox}
         >
           {/* Controls */}
@@ -535,7 +496,7 @@ export default function ResourcesPage() {
               <ZoomOut className="w-4 h-4" />
             </button>
 
-            <span className="text-white text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full min-w-[52px] text-center">
+            <span className="text-white text-xs font-bold bg-white/10 px-3 py-1.5 rounded-full min-w-52px text-center">
               {Math.round(scale * 100)}%
             </span>
 

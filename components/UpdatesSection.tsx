@@ -143,7 +143,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
       <div className="bg-[#002E5D] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-full bg-[#F58220] flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
           </div>
@@ -196,9 +196,9 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
           </div>
         )}
         <iframe
-          src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=500&small_header=true&hide_cover=true&adapt_container_width=true&hide_header=true"
+          src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=652&small_header=true&hide_cover=true&adapt_container_width=true&hide_header=true"
           width="500"
-          height="500"
+          height="652"
           className={`border-0 transition-opacity duration-500 ${
             iframeLoaded ? "opacity-100" : "opacity-0"
           }`}

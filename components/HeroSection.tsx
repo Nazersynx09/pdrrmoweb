@@ -73,7 +73,7 @@ export default function HeroSection({
                 Email
               </span>
             </div>
-            <p className="text-sm font-semibold break-all">{email}</p>
+            <p className="text-lg font-semibold break-all">{email}</p>
           </div>
           <div className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-xl backdrop-blur-sm">
           <div className="flex gap-3 text-orange-200 mb-2 flex-col">
@@ -84,8 +84,8 @@ export default function HeroSection({
               </span>
             </div>
             <div className="flex flex-col gap-1  text-white">
-              <p className="text-sm font-semibold break-all">{address1}</p>
-              <p className="text-sm font-semibold break-all">{address2}</p>
+              <p className="text-sm break-all">{address1}</p>
+              <p className="text-sm break-all">{address2}</p>
             </div>
           </div>
         </div>
