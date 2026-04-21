@@ -176,7 +176,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
         </p>
       </div>
 
-      <div className="relative flex justify-center bg-gray-50 p-3 min-h-900px">
+      <div className="relative flex justify-center bg-gray-50 p-3 min-h-652px w-full overflow-x-hidden">
         {!iframeLoaded && (
           <div className="absolute inset-0 flex flex-col gap-3 p-4 animate-pulse">
             <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
           src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FHeman201&tabs=timeline&width=500&height=652&small_header=true&hide_cover=true&adapt_container_width=true&hide_header=true"
           width="500"
           height="652"
-          className={`border-0 transition-opacity duration-500 ${
+          className={`border-0 transition-opacity duration-500 w-full sm:w-500px ${
             iframeLoaded ? "opacity-100" : "opacity-0"
           }`}
           loading="lazy"

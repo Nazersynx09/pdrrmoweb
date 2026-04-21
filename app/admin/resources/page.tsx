@@ -9,7 +9,6 @@ interface Resource {
   category: 'guidelines' | 'forms' | 'training' | 'reports' | 'other';
   file_url: string;
   file_type: 'pdf' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'ppt' | 'pptx' | 'other';
-  file_size: number;
   description: string;
   is_active: boolean;
   created_at: string;
@@ -22,7 +21,7 @@ const initialResources: Resource[] = [
     category: 'guidelines',
     file_url: '/resources/operations-manual-2026.pdf',
     file_type: 'pdf',
-    file_size: 2500000,
+  
     description: 'Comprehensive operations manual for PDRRMO personnel',
     is_active: true,
     created_at: '2026-01-15T10:00:00Z',
@@ -33,7 +32,7 @@ const initialResources: Resource[] = [
     category: 'forms',
     file_url: '/resources/emergency-response-form.pdf',
     file_type: 'pdf',
-    file_size: 150000,
+
     description: 'Standard form for documenting emergency responses',
     is_active: true,
     created_at: '2026-02-01T09:00:00Z',
@@ -44,7 +43,7 @@ const initialResources: Resource[] = [
     category: 'training',
     file_url: '/resources/training-materials-2026.pptx',
     file_type: 'pptx',
-    file_size: 8500000,
+
     description: 'Training presentation materials for community preparedness',
     is_active: true,
     created_at: '2026-03-10T14:00:00Z',
@@ -55,7 +54,7 @@ const initialResources: Resource[] = [
     category: 'reports',
     file_url: '/resources/annual-report-2025.pdf',
     file_type: 'pdf',
-    file_size: 12000000,
+
     description: 'Annual report summarizing 2025 activities and achievements',
     is_active: true,
     created_at: '2026-01-05T08:00:00Z',
@@ -66,7 +65,7 @@ const initialResources: Resource[] = [
     category: 'guidelines',
     file_url: '/resources/evacuation-guidelines.pdf',
     file_type: 'pdf',
-    file_size: 500000,
+  
     description: 'Guidelines for setting up and managing evacuation centers',
     is_active: false,
     created_at: '2025-12-01T12:00:00Z',
@@ -85,7 +84,6 @@ export default function ResourcesPage() {
     category: 'guidelines' as 'guidelines' | 'forms' | 'training' | 'reports' | 'other',
     file_url: '',
     file_type: 'pdf' as 'pdf' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'ppt' | 'pptx' | 'other',
-    file_size: 0,
     description: '',
     is_active: true,
   });
@@ -116,7 +114,7 @@ export default function ResourcesPage() {
     
     setShowForm(false);
     setEditingItem(null);
-    setFormData({ title: '', category: 'guidelines', file_url: '', file_type: 'pdf', file_size: 0, description: '', is_active: true });
+    setFormData({ title: '', category: 'guidelines', file_url: '', file_type: 'pdf',  description: '', is_active: true });
   };
 
   const handleEdit = (item: Resource) => {
@@ -126,7 +124,6 @@ export default function ResourcesPage() {
       category: item.category,
       file_url: item.file_url,
       file_type: item.file_type,
-      file_size: item.file_size,
       description: item.description,
       is_active: item.is_active,
     });
@@ -176,7 +173,7 @@ export default function ResourcesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Resources</h1>
@@ -186,7 +183,7 @@ export default function ResourcesPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ title: '', category: 'guidelines', file_url: '', file_type: 'pdf', file_size: 0, description: '', is_active: true });
+            setFormData({ title: '', category: 'guidelines', file_url: '', file_type: 'pdf', description: '', is_active: true });
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -231,9 +228,8 @@ export default function ResourcesPage() {
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Title</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Category</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">File Type</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Size</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
+                <th className="text-right px-10 py-3 text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -260,9 +256,7 @@ export default function ResourcesPage() {
                         {item.file_type}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
-                      {formatFileSize(item.file_size)}
-                    </td>
+                    
                     <td className="px-4 py-4">
                       <button
                         onClick={() => toggleActive(item.id)}
@@ -399,16 +393,7 @@ export default function ResourcesPage() {
                     placeholder="/resources/example.pdf"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">File Size (bytes)</label>
-                  <input
-                    type="number"
-                    value={formData.file_size}
-                    onChange={(e) => setFormData({ ...formData, file_size: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                    placeholder="0"
-                  />
-                </div>
+                
               </div>
 
               <div>

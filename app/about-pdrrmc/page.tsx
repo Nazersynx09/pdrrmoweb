@@ -166,7 +166,7 @@ export default function AboutPDRRMC() {
         </div>
 
         {/* Official Logo */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
+        {/* <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
           <h2 className="text-2xl font-bold text-[#002E5D] text-center mb-8">PDRRMC Official</h2>
           <div className="flex flex-col items-center">
             <Image
@@ -180,7 +180,7 @@ export default function AboutPDRRMC() {
             <p className="text-[#F58220] font-bold text-lg">(PDRRMC)</p>
             <p className="text-gray-500 text-center mt-2">Province of Iloilo</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
