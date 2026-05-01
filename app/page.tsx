@@ -9,7 +9,7 @@ import Carousel from "@/components/Carousel";
 import UpdatesSection from "@/components/UpdatesSection";
 import QuickLinks from "@/components/QuickLinks";
 import Footer from "@/components/Footer";
-import { supabase } from '@/lib/supabase';
+
 
 const alerts = [
   {

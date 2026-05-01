@@ -14,7 +14,7 @@ interface Advisory {
   created_at: string;
 }
 
-let advisories: Advisory[] = [
+const advisories: Advisory[] = [
   {
     id: '1',
     title: 'Southwest Monsoon Advisory',
