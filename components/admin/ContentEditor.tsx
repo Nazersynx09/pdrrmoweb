@@ -250,7 +250,7 @@ export default function ContentEditor({
                       updateBlock(block.id, { content: e.target.value })
                     }
                     placeholder="Enter paragraph text..."
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] focus:border-transparent resize-none min-h-[100px] text-gray-900 placeholder:text-black"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] focus:border-transparent resize-none min-h-100px text-gray-900 placeholder:text-black"
                     onFocus={() => setActiveBlock(block.id)}
                   />
                 )}
@@ -339,7 +339,7 @@ export default function ContentEditor({
                         updateBlock(block.id, { content: e.target.value })
                       }
                       placeholder="Enter quote text..."
-                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] resize-none min-h-[80px] italic text-gray-900 placeholder:text-black"
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] resize-none min-h-80px italic text-gray-900 placeholder:text-black"
                       onFocus={() => setActiveBlock(block.id)}
                     />
                   </div>
