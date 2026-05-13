@@ -19,6 +19,7 @@ export default function Navbar() {
         timeZone: "Asia/Manila",
         hour: "2-digit",
         minute: "2-digit",
+        second: "2-digit",
       })
       const date = new Date().toLocaleDateString("en-PH", {
         timeZone: "Asia/Manila",
