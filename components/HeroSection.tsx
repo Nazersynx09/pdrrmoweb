@@ -7,7 +7,6 @@ interface HeroSectionProps {
   email: string;
   address1: string;
   address2: string;
-
 }
 
 export default function HeroSection({
@@ -26,9 +25,39 @@ export default function HeroSection({
         <div className="absolute bottom-10 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
       </div>
 
+       {/* Gradient Background */}
+  <div className="absolute inset-0 bg-linear-to-br from-[#002E5D] via-[#002b5c] to-[#05122f]" />
+
+  {/* Decorative Blur Effects */}
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute top-10 left-0 md:left-10 w-40 h-40 md:w-64 md:h-64 bg-[#F58220]/10 rounded-full blur-3xl" />
+    
+    <div className="absolute bottom-0 right-0 md:right-20 w-56 h-56 md:w-96 md:h-96 bg-blue-500/10 rounded-full blur-3xl" />
+  </div>
+
+    {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/banner.png"
+          alt="Background"
+          fill
+          priority
+          quality={100}
+          className="
+            object-cover
+            object-center
+            md:object-center
+            lg:object-[60%_center]
+            opacity-15
+            md:opacity-30
+          "
+        />
+      </div>
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-20">
         <div className="flex flex-col items-center text-center gap-8 lg:flex-row lg:items-center lg:text-left lg:justify-between">
           <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
+
             <div className="shrink-0 flex items-center justify-center w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56 ">
               <Image
                 src="/pdrrmoLogo.png"
@@ -60,7 +89,7 @@ export default function HeroSection({
           <div className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-xl backdrop-blur-sm">
             <div className="flex items-center gap-3 text-orange-200 mb-2">
               <Phone className="h-5 w-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">
+              <span className="text-xs uppercase tracking-widest">
                 Hotline
               </span>
             </div>
@@ -69,7 +98,7 @@ export default function HeroSection({
           <div className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-xl backdrop-blur-sm">
             <div className="flex items-center gap-3 text-orange-200 mb-2">
               <Mail className="h-5 w-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">
+              <span className="text-xs uppercase tracking-widest">
                 Email
               </span>
             </div>
