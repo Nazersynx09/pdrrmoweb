@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Map, Image } from 'lucide-react';
+import { useAdminApi } from "@/lib/hooks/useAdminApi";
 
 interface HazardMap {
   id: string;
@@ -14,55 +15,15 @@ interface HazardMap {
   created_at: string;
 }
 
-const initialHazardMaps: HazardMap[] = [
-  {
-    id: '1',
-    title: 'Iloilo City Flood Hazard Map',
-    type: 'flood',
-    file_url: '/hazard-maps/flood-iloilo-city.pdf',
-    thumbnail: '/hazard-maps/thumbnails/flood-iloilo-city.jpg',
-    description: 'Detailed flood hazard zones for Iloilo City area',
-    is_active: true,
-    created_at: '2026-04-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Western Visayas Landslide Susceptibility Map',
-    type: 'landslide',
-    file_url: '/hazard-maps/landslide-western-visayas.pdf',
-    thumbnail: '/hazard-maps/thumbnails/landslide-wv.jpg',
-    description: 'Landslide susceptibility zones across Western Visayas',
-    is_active: true,
-    created_at: '2026-03-15T08:00:00Z',
-  },
-  {
-    id: '3',
-    title: 'Iloilo Earthquake Hazard Map',
-    type: 'earthquake',
-    file_url: '/hazard-maps/earthquake-iloilo.pdf',
-    thumbnail: '/hazard-maps/thumbnails/earthquake-iloilo.jpg',
-    description: 'Seismic hazard zones and fault lines in Iloilo province',
-    is_active: true,
-    created_at: '2026-03-01T12:00:00Z',
-  },
-  {
-    id: '4',
-    title: 'Coastal Storm Surge Map - Iloilo',
-    type: 'storm_surge',
-    file_url: '/hazard-maps/storm-surge-coastal.pdf',
-    thumbnail: '/hazard-maps/thumbnails/storm-surge.jpg',
-    description: 'Storm surge vulnerability for coastal areas',
-    is_active: false,
-    created_at: '2026-02-20T09:00:00Z',
-  },
-];
 
 export default function HazardMapsPage() {
-  const [maps, setMaps] = useState<HazardMap[]>(initialHazardMaps);
+  const { data: maps, loading, error, refetch, create, update, remove } = useAdminApi<HazardMap>('/api/admin/hazard-maps');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<HazardMap | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -79,27 +40,28 @@ export default function HazardMapsPage() {
     return matchesSearch && matchesType;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormLoading(true);
+    setFormError(null);
     
-    if (editingItem) {
-      setMaps(maps.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData }
-          : item
-      ));
-    } else {
-      const newItem: HazardMap = {
-        id: Date.now().toString(),
-        ...formData,
-        created_at: new Date().toISOString(),
-      };
-      setMaps([newItem, ...maps]);
+    try {
+      const result = editingItem
+        ? await update(editingItem.id, formData)
+        : await create(formData);
+      
+      if (result.success) {
+        setShowForm(false);
+        setEditingItem(null);
+        refetch();
+      } else {
+        setFormError(result.error || 'Failed to save hazard map');
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setFormLoading(false);
     }
-    
-    setShowForm(false);
-    setEditingItem(null);
-    setFormData({ title: '', type: 'flood', file_url: '', thumbnail: '', description: '', is_active: true });
   };
 
   const handleEdit = (item: HazardMap) => {
@@ -115,18 +77,19 @@ export default function HazardMapsPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this hazard map?')) {
-      setMaps(maps.filter(item => item.id !== id));
+      await remove(id);
+      refetch();
     }
   };
 
-  const toggleActive = (id: string) => {
-    setMaps(maps.map(item => 
-      item.id === id 
-        ? { ...item, is_active: !item.is_active }
-        : item
-    ));
+  const toggleActive = async (id: string) => {
+    const item = maps.find(m => m.id === id);
+    if (item) {
+      await update(id, { is_active: !item.is_active });
+      refetch();
+    }
   };
 
   const getTypeBadge = (type: string) => {
@@ -369,22 +332,30 @@ export default function HazardMapsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+                {formError && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mb-4">
+                  {formError}
+                </div>
+              )}
+                <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false);
                     setEditingItem(null);
+                    setFormError(null);
                   }}
-                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  disabled={formLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
+                  disabled={formLoading}
+                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingItem ? 'Update' : 'Create'}
+                  {formLoading ? (editingItem ? 'Updating...' : 'Creating...') : (editingItem ? 'Update' : 'Create')}
                 </button>
               </div>
             </form>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
+import { useAdminApi } from "@/lib/hooks/useAdminApi";
 
 interface Advisory {
   id: string;
@@ -16,48 +17,16 @@ interface Advisory {
   created_at: string;
 }
 
-const initialAdvisories: Advisory[] = [
-  {
-    id: '1',
-    title: 'Southwest Monsoon Advisory',
-    content: 'The southwest monsoon season continues to affect the region. Please prepare emergency kits and know your evacuation routes.',
-    image: '',
-    severity: 'warning',
-    valid_from: '2026-04-13T00:00:00Z',
-    valid_until: '2026-04-20T00:00:00Z',
-    is_active: true,
-    created_at: '2026-04-13T08:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Flood Monitoring Update',
-    content: 'Flooding occurs in low-lying areas. Avoid crossing flooded roads.',
-    image: '',
-    severity: 'watch',
-    valid_from: '2026-04-13T00:00:00Z',
-    valid_until: '2026-04-16T00:00:00Z',
-    is_active: true,
-    created_at: '2026-04-13T10:00:00Z',
-  },
-  {
-    id: '3',
-    title: 'General Weather Advisory',
-    content: 'Fair weather conditions expected. No major weather disturbances forecasted.',
-    image: '',
-    severity: 'info',
-    valid_from: '2026-04-13T00:00:00Z',
-    valid_until: '2026-04-15T00:00:00Z',
-    is_active: false,
-    created_at: '2026-04-12T06:00:00Z',
-  },
-];
+
 
 export default function AdvisoriesPage() {
-  const [advisories, setAdvisories] = useState<Advisory[]>(initialAdvisories);
+  const { data: advisories, loading, error, refetch, create, update, remove } = useAdminApi<Advisory>('/api/admin/advisories');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Advisory | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -75,56 +44,61 @@ export default function AdvisoriesPage() {
     return matchesSearch && matchesSeverity;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingItem) {
-      setAdvisories(advisories.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData }
-          : item
-      ));
-    } else {
-      const newItem: Advisory = {
-        id: Date.now().toString(),
-        ...formData,
-        created_at: new Date().toISOString(),
-      };
-      setAdvisories([newItem, ...advisories]);
+    setFormLoading(true);
+    setFormError(null);
+
+    try {
+      const result = editingItem 
+        ? await update(editingItem.id, formData)
+        : await create(formData);
+
+      if (result.success) {
+        setShowForm(false);
+        setEditingItem(null);
+        setFormData({ title: '', content: '', image: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
+        refetch();
+      } else {
+        setFormError(result.error || 'Failed to save advisory');
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setFormLoading(false);
     }
-    
-    setShowForm(false);
-    setEditingItem(null);
-    setFormData({ title: '', content: '', image: '', severity: 'info', valid_from: '', valid_until: '', is_active: true });
-  };
+  }
 
   const handleEdit = (item: Advisory) => {
     setEditingItem(item);
     setFormData({
       title: item.title,
       content: item.content,
-      image: item.image || '',
+      image: item.image,
       severity: item.severity,
       valid_from: item.valid_from.split('T')[0],
       valid_until: item.valid_until.split('T')[0],
       is_active: item.is_active,
     });
     setShowForm(true);
-  };
+  }       
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this advisory?')) {
-      setAdvisories(advisories.filter(item => item.id !== id));
+      await remove(id);
+      refetch();
     }
   };
 
-  const toggleActive = (id: string) => {
-    setAdvisories(advisories.map(item => 
-      item.id === id 
-        ? { ...item, is_active: !item.is_active }
-        : item
-    ));
+
+  const toggleActive = async (id: string) => {
+    const item = advisories.find(a => a.id === id);
+    if (item) {
+      await update(id, { is_active: !item.is_active });
+      refetch();
+    }
   };
+
 
   const getSeverityBadge = (severity: string) => {
     const styles = {
@@ -151,7 +125,7 @@ export default function AdvisoriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Advisories</h1>
-          <p className="text-gray-600">Manage weather advisories and alerts</p>
+          <p className="text-gray-600">Manage advisories and alerts</p>
         </div>
         <button
           onClick={() => {
@@ -375,18 +349,27 @@ export default function AdvisoriesPage() {
                   onClick={() => {
                     setShowForm(false);
                     setEditingItem(null);
+                    setFormError(null);
                   }}
                   className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={formLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
+                  disabled={formLoading}
+                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingItem ? 'Update' : 'Create'}
+                  {formLoading ? (editingItem ? 'Updating...' : 'Creating...') : (editingItem ? 'Update' : 'Create')}
                 </button>
               </div>
+              
+              {formError && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                  {formError}
+                </div>
+              )}
             </form>
           </div>
         </div>

@@ -1,102 +1,100 @@
-import { NextResponse } from 'next/server';
+import{NextResponse} from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-interface Issuance {
-  id: string;
-  title: string;
-  issuance_number: string;
-  issue_date: string;
-  file_path: string;
-  description: string;
-  created_at: string;
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-let issuances: Issuance[] = [
-  {
-    id: '1',
-    title: 'NDRRMC Memorandum No. 58, s. 2026',
-    issuance_number: 'NDRRMC No. 58, s. 2026',
-    issue_date: '2026-03-01',
-    file_path: 'https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC-MEMO-58-s.-2026-Raising-of-the-NDRRMOC-Alert-Status-to-BLUE-ICOW-The-Observance-of-the-Holy-Week-SEMANA-SANTA-2026.pdf',
-    description: 'Raising of the NDRRMOC Alert Status to BLUE ICOW the Observance of the Holy Week (SEMANA SANTA) 2026',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'NDRRMC Memorandum No. 62, s. 2026',
-    issuance_number: 'NDRRMC No. 62, s. 2026',
-    issue_date: '2026-03-15',
-    file_path: 'https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC_Memorandum_No_62_s_2026.pdf',
-    description: 'NDRRMC Memorandum regarding disaster preparedness measures',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    title: 'PDRRMC Memorandum No. 15, s. 2026',
-    issuance_number: 'PDRRMC No. 15, s. 2026',
-    issue_date: '2026-02-01',
-    file_path: 'https://ndrrmc.gov.ph/wp-content/uploads/2026/02/NDRRMC_Memorandum_No_15_s_2026.pdf',
-    description: 'Provincial DRRM memorandum for local implementation',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    title: 'NDRRMC Memorandum No. 14, s. 2025',
-    issuance_number: 'NDRRMC No. 14, s. 2025',
-    issue_date: '2025-01-01',
-    file_path: './superTyphoonTtex.pdf',
-    description: 'Super Typhoon TTEX preparedness and response guidelines',
-    created_at: new Date().toISOString(),
-  },
-];
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get('slug'); 
 
-// GET - Public: List all issuances
-export async function GET() {
-  try {
-    return NextResponse.json({
-      success: true,
-      data: issuances
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch issuances' },
-      { status: 500 }
-    );
-  }
-}
+  if (slug) {
+    const { data, error } = await supabase
+      .from('issuances')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single();
 
-// POST - Admin: Create issuance
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { title, issuance_number, issue_date, file_path, description } = body;
-
-    if (!title || !file_path) {
-      return NextResponse.json(
-        { success: false, error: 'Title and file_path are required' },
-        { status: 400 }
-      );
+    if (error || !data) {
+      return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
 
-    const newIssuance: Issuance = {
-      id: Date.now().toString(),
-      title,
-      issuance_number: issuance_number || '',
-      issue_date: issue_date || '',
-      file_path,
-      description: description || '',
-      created_at: new Date().toISOString(),
-    };
-
-    issuances.push(newIssuance);
-
-    return NextResponse.json({
-      success: true,
-      data: newIssuance
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to create issuance' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data });
   }
+
+  const { data, error } = await supabase
+    .from('issuances')
+    .select('*')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false });
+
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data });
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const { title, content, featured_image, excerpt, status } = body;
+
+  if (!title || !content) {
+    return NextResponse.json({ success: false, error: 'Title and content required' }, { status: 400 });
+  }
+
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
+
+  const { data, error } = await supabase.from('issuances').insert([{
+    title, slug, content,
+    featured_image: featured_image || '',
+    excerpt: excerpt || content.substring(0, 150),
+    status: status || 'draft',
+    published_at: status === 'published' ? new Date().toISOString() : null,
+  }]).select().single();
+
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data });
+}
+
+export async function PUT(request: Request) {
+  const body = await request.json();
+  const { id, title, content, featured_image, excerpt, status } = body; 
+
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
+  }
+
+  const updates: any = {};
+  if (title) {
+    updates.title = title;
+    updates.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);
+  }
+
+  if (content) updates.content = content;
+  if (featured_image) updates.featured_image = featured_image;
+  if (excerpt) updates.excerpt = excerpt;
+  if (status) {
+    updates.status = status;
+    if (status === 'published' && !updates.published_at) {
+      updates.published_at = new Date().toISOString();
+    }
+  }
+
+  const { data, error } = await supabase.from('issuances').update(updates).eq('id', id).select().single();
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data });
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json();
+  const { id } = body;
+
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase.from('issuances').delete().eq('id', id).select().single();
+  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, data });
 }

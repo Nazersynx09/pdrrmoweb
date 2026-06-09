@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, FileUp, ExternalLink } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
+import { useAdminApi } from "@/lib/hooks/useAdminApi";
 
 interface Issuance {
   id: string;
@@ -16,59 +17,16 @@ interface Issuance {
   created_at: string;
 }
 
-const initialIssuances: Issuance[] = [
-  {
-    id: '1',
-    title: 'Executive Order No. 2026-001: Declaration of Wet Season Preparedness',
-    type: 'executive_order',
-    number: '2026-001',
-    date_issued: '2026-01-15',
-    file_url: '/issuances/EO-2026-001.pdf',
-    description: 'Declaration of wet season preparedness and emergency protocols for PDRRMO',
-    is_active: true,
-    created_at: '2026-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Memorandum No. 2026-012: Emergency Response Team Deployment',
-    type: 'memorandum',
-    number: '2026-012',
-    date_issued: '2026-02-20',
-    file_url: '/issuances/MEMO-2026-012.pdf',
-    description: 'Deployment orders for emergency response teams during monsoon season',
-    is_active: true,
-    created_at: '2026-02-20T14:00:00Z',
-  },
-  {
-    id: '3',
-    title: 'Resolution No. 2026-008: Community Evacuation Plan Approval',
-    type: 'resolution',
-    number: '2026-008',
-    date_issued: '2026-03-05',
-    file_url: '/issuances/RES-2026-008.pdf',
-    description: 'Approval of community evacuation plans for flood-prone areas',
-    is_active: true,
-    created_at: '2026-03-05T09:00:00Z',
-  },
-  {
-    id: '4',
-    title: 'Ordinance No. 2026-003: Disaster Risk Reduction Fund',
-    type: 'ordinance',
-    number: '2026-003',
-    date_issued: '2026-01-30',
-    file_url: '/issuances/ORD-2026-003.pdf',
-    description: 'Establishment of disaster risk reduction fund for FY 2026',
-    is_active: false,
-    created_at: '2026-01-30T11:00:00Z',
-  },
-];
+
 
 export default function IssuancesPage() {
-  const [issuances, setIssuances] = useState<Issuance[]>(initialIssuances);
+  const { data: issuances, loading, error, refetch, create, update, remove } = useAdminApi<Issuance>('/api/admin/issuances');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Issuance | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -86,27 +44,28 @@ export default function IssuancesPage() {
     return matchesSearch && matchesType;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormLoading(true);
+    setFormError(null);
     
-    if (editingItem) {
-      setIssuances(issuances.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData }
-          : item
-      ));
-    } else {
-      const newItem: Issuance = {
-        id: Date.now().toString(),
-        ...formData,
-        created_at: new Date().toISOString(),
-      };
-      setIssuances([newItem, ...issuances]);
+    try {
+      const result = editingItem
+        ? await update(editingItem.id, formData)
+        : await create(formData);
+      
+      if (result.success) {
+        setShowForm(false);
+        setEditingItem(null);
+        refetch();
+      } else {
+        setFormError(result.error || 'Failed to save issuance');
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setFormLoading(false);
     }
-    
-    setShowForm(false);
-    setEditingItem(null);
-    setFormData({ title: '', type: 'executive_order', number: '', date_issued: '', file_url: '', description: '', is_active: true });
   };
 
   const handleEdit = (item: Issuance) => {
@@ -115,7 +74,7 @@ export default function IssuancesPage() {
       title: item.title,
       type: item.type,
       number: item.number,
-      date_issued: item.date_issued,
+      date_issued: item.date_issued.split('T')[0],
       file_url: item.file_url,
       description: item.description,
       is_active: item.is_active,
@@ -123,18 +82,17 @@ export default function IssuancesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this issuance?')) {
-      setIssuances(issuances.filter(item => item.id !== id));
+      await remove(id);
     }
   };
 
-  const toggleActive = (id: string) => {
-    setIssuances(issuances.map(item => 
-      item.id === id 
-        ? { ...item, is_active: !item.is_active }
-        : item
-    ));
+  const toggleActive = async (id: string) => {
+    const item = issuances.find(i => i.id === id);
+    if (item) {
+      await update(id, { is_active: !item.is_active });
+    }
   };
 
   const getTypeBadge = (type: string) => {
@@ -402,18 +360,27 @@ export default function IssuancesPage() {
                   onClick={() => {
                     setShowForm(false);
                     setEditingItem(null);
+                    setFormError(null);
                   }}
-                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  disabled={formLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
+                  disabled={formLoading}
+                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingItem ? 'Update' : 'Create'}
+                  {formLoading ? (editingItem ? 'Updating...' : 'Creating...') : (editingItem ? 'Update' : 'Create')}
                 </button>
               </div>
+              
+              {formError && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mt-4">
+                  {formError}
+                </div>
+              )}
             </form>
           </div>
         </div>

@@ -2,19 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard,
-  Newspaper,
-  AlertTriangle,
-  Map,
-  FileText,
-  FileUp,
-  LogOut,
-  Menu,
-  X,
+  LayoutDashboard, Newspaper, AlertTriangle,
+  Map, FileText, FileUp, LogOut, Menu, X,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,28 +19,40 @@ const menuItems = [
   { href: '/admin/issuances', label: 'Issuances', icon: FileUp },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [phTime, setPhTime] = useState('');
+  const [checking, setChecking] = useState(true);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Auth guard
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setChecking(false);
+      }
+    };
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.replace('/login');
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     const updateTime = () => {
       const time = new Date().toLocaleTimeString('en-PH', {
-        timeZone: 'Asia/Manila',
-        hour: '2-digit',
-        minute: '2-digit',
+        timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit',
       });
       const date = new Date().toLocaleDateString('en-PH', {
-        timeZone: 'Asia/Manila',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+        timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric',
       });
       setPhTime(`${date} ${time}`);
     };
@@ -65,11 +71,24 @@ export default function AdminLayout({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace('/login');
+  };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-[#002E5D] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="fixed inset-0 z-40 lg:hidden">
         <div
-          className={`fixed inset-0 bg-black/50 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-none'}`}
+          className={`fixed inset-0 bg-black/50 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={() => setSidebarOpen(false)}
         />
       </div>
@@ -83,10 +102,7 @@ export default function AdminLayout({
             <Image src="/pdrrmoLogo.png" alt="PDRRMO Logo" width={32} height={32} className="bg-white rounded p-0.5" />
             <span className="text-sm font-bold">PDRRMO Admin</span>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 hover:bg-white/10 rounded"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1 hover:bg-white/10 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -94,19 +110,14 @@ export default function AdminLayout({
         <nav className="p-4 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              pathname === item.href ||
-              (item.href !== '/admin' && pathname.startsWith(item.href));
-
+            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-xs font-semibold uppercase tracking-wide ${
-                  isActive
-                    ? 'bg-[#F58220] text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  isActive ? 'bg-[#F58220] text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -125,7 +136,10 @@ export default function AdminLayout({
             <Link href="/" className="text-xs text-white/70 hover:text-[#F58220] transition-colors">
               ← Back to Site
             </Link>
-            <button className="flex items-center gap-2 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded-lg transition-colors text-xs">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded-lg transition-colors text-xs"
+            >
               <LogOut className="w-4 h-4" />
               <span className="font-medium">Logout</span>
             </button>
@@ -135,18 +149,13 @@ export default function AdminLayout({
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 h-16 bg-[#002E5D] border-b border-white/10 flex items-center justify-between px-4 lg:px-8">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 hover:bg-white/10 rounded-lg text-white"
-          >
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-white/10 rounded-lg text-white">
             <Menu className="w-6 h-6" />
           </button>
-
           <div className="flex items-center gap-4 ml-auto">
             <span className="text-xs text-white/70 font-semibold uppercase tracking-wide">Admin Panel</span>
           </div>
         </header>
-
         <main className="p-4 lg:p-8">{children}</main>
       </div>
     </div>

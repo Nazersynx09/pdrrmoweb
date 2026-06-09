@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, FileText, Download } from 'lucide-react';
+import { useAdminApi } from '@/lib/hooks/useAdminApi';
 
 interface Resource {
   id: string;
@@ -14,70 +15,15 @@ interface Resource {
   created_at: string;
 }
 
-const initialResources: Resource[] = [
-  {
-    id: '1',
-    title: 'PDRRMO Operations Manual 2026',
-    category: 'guidelines',
-    file_url: '/resources/operations-manual-2026.pdf',
-    file_type: 'pdf',
-  
-    description: 'Comprehensive operations manual for PDRRMO personnel',
-    is_active: true,
-    created_at: '2026-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Emergency Response Form - Standard',
-    category: 'forms',
-    file_url: '/resources/emergency-response-form.pdf',
-    file_type: 'pdf',
-
-    description: 'Standard form for documenting emergency responses',
-    is_active: true,
-    created_at: '2026-02-01T09:00:00Z',
-  },
-  {
-    id: '3',
-    title: 'Disaster Preparedness Training Materials',
-    category: 'training',
-    file_url: '/resources/training-materials-2026.pptx',
-    file_type: 'pptx',
-
-    description: 'Training presentation materials for community preparedness',
-    is_active: true,
-    created_at: '2026-03-10T14:00:00Z',
-  },
-  {
-    id: '4',
-    title: 'Annual Report 2025',
-    category: 'reports',
-    file_url: '/resources/annual-report-2025.pdf',
-    file_type: 'pdf',
-
-    description: 'Annual report summarizing 2025 activities and achievements',
-    is_active: true,
-    created_at: '2026-01-05T08:00:00Z',
-  },
-  {
-    id: '5',
-    title: 'Evacuation Center Guidelines',
-    category: 'guidelines',
-    file_url: '/resources/evacuation-guidelines.pdf',
-    file_type: 'pdf',
-  
-    description: 'Guidelines for setting up and managing evacuation centers',
-    is_active: false,
-    created_at: '2025-12-01T12:00:00Z',
-  },
-];
 
 export default function ResourcesPage() {
-  const [resources, setResources] = useState<Resource[]>(initialResources);
+  const {data: resources, loading, error, refetch, create, update, remove} = useAdminApi<Resource>('/api/admin/resources');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Resource | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -94,27 +40,28 @@ export default function ResourcesPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormLoading(true);
+    setFormError(null);
     
-    if (editingItem) {
-      setResources(resources.map(item => 
-        item.id === editingItem.id 
-          ? { ...item, ...formData }
-          : item
-      ));
-    } else {
-      const newItem: Resource = {
-        id: Date.now().toString(),
-        ...formData,
-        created_at: new Date().toISOString(),
-      };
-      setResources([newItem, ...resources]);
+    try {
+      const result = editingItem
+        ? await update(editingItem.id, formData)
+        : await create(formData);
+      
+      if (result.success) {
+        setShowForm(false);
+        setEditingItem(null);
+        refetch();
+      } else {
+        setFormError(result.error || 'Failed to save resource');
+      }
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setFormLoading(false);
     }
-    
-    setShowForm(false);
-    setEditingItem(null);
-    setFormData({ title: '', category: 'guidelines', file_url: '', file_type: 'pdf',  description: '', is_active: true });
   };
 
   const handleEdit = (item: Resource) => {
@@ -130,18 +77,26 @@ export default function ResourcesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this resource?')) {
-      setResources(resources.filter(item => item.id !== id));
+      try {
+        await supabaseAdmin.from('resources').delete().eq('id', id);
+        refetch();
+      } catch (err) {
+        console.error('Error deleting resource:', err);
+      }
     }
   };
-
-  const toggleActive = (id: string) => {
-    setResources(resources.map(item => 
-      item.id === id 
-        ? { ...item, is_active: !item.is_active }
-        : item
-    ));
+  
+  const toggleActive = async (id: string) => {
+    const item = resources.find(r => r.id === id);
+    if (!item) return;
+    try {      await supabaseAdmin.from('resources').update({ is_active: !item.is_active }).eq('id', id);
+      refetch();
+    }
+    catch (err) {
+      console.error('Error toggling active status:', err);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -409,22 +364,30 @@ export default function ResourcesPage() {
                 </div>
               </div>
 
+              {formError && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mb-4">
+                  {formError}
+                </div>
+              )}
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false);
                     setEditingItem(null);
+                    setFormError(null);
                   }}
-                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  disabled={formLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
+                  disabled={formLoading}
+                  className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingItem ? 'Update' : 'Create'}
+                  {formLoading ? (editingItem ? 'Updating...' : 'Creating...') : (editingItem ? 'Update' : 'Create')}
                 </button>
               </div>
             </form>

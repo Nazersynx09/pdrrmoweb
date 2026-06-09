@@ -85,6 +85,22 @@ const policeDistricts: District[] = [
       { municipality: "Passi City", office: "P/Col. Lorem Ipsum", contact: "0910666666", team: "Iloilo Police Provincial Office" },
     ],
   },
+    {
+    name: "4th District",
+    rows: [
+      { municipality: "Lemery",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "San Rafael",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Concepcion", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
+  {
+    name: "5th District",
+    rows: [
+      { municipality: "Carles",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Batad",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Anilao", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
 ];
 
 const fireDistricts: District[] = [
@@ -116,6 +132,22 @@ const fireDistricts: District[] = [
       { municipality: "Passi City", office: "SFO1 Lorem Ipsum", contact: "0910666666", team: "Bureau of Fire Protection" },
     ],
   },
+    {
+    name: "4th District",
+    rows: [
+      { municipality: "Lemery",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "San Rafael",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Concepcion", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
+  {
+    name: "5th District",
+    rows: [
+      { municipality: "Carles",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Batad",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Anilao", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
 ];
 
 const rhuDistricts: District[] = [
@@ -145,6 +177,22 @@ const rhuDistricts: District[] = [
       { municipality: "Duenas",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
       { municipality: "Dumangas",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
       { municipality: "Passi City", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
+  {
+    name: "4th District",
+    rows: [
+      { municipality: "Lemery",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "San Rafael",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Concepcion", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+    ],
+  },
+  {
+    name: "5th District",
+    rows: [
+      { municipality: "Carles",     office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Batad",   office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
+      { municipality: "Anilao", office: "Dr. Lorem Ipsum", contact: "0910666666", team: "Rural Health Unit" },
     ],
   },
 ];

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, FileText, Image as ImageIcon, File, Trash2, Eye } from "lucide-react";
+import { uploadFile } from '@/lib/uploadFile';
 
 interface FileUploadProps {
   value: string;
@@ -46,37 +47,23 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
   };
 
   const handleFileUpload = async (file: File) => {
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a PDF or image file (JPG, PNG, GIF)");
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert("File size should be less than 10MB");
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        onChange(result);
-        setUploading(false);
-      };
-      reader.onerror = () => {
-        setUploading(false);
-        alert("Failed to read file");
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      setUploading(false);
-      alert("Failed to upload file");
-    }
-  };
+  const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
+  if (!allowed.includes(file.type)) {
+    alert('Please upload a PDF or image file');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    alert('File must be under 10MB');
+    return;
+  }
+  setUploading(true);
+  // Use 'issuances' or 'resources' bucket depending on context
+  // You can pass bucket as a prop if needed
+  const url = await uploadFile(file, 'issuances');
+  if (url) onChange(url);
+  else alert('Upload failed. Please try again.');
+  setUploading(false);
+};
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();

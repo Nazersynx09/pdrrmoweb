@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Upload, X, ImageIcon, Trash2 } from "lucide-react";
+import { uploadFile } from '@/lib/uploadFile';
 
 interface ImageUploadProps {
   value: string;
@@ -43,35 +44,20 @@ export default function ImageUpload({ value, onChange, label }: ImageUploadProps
   };
 
   const handleFileUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size should be less than 5MB");
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        onChange(result);
-        setUploading(false);
-      };
-      reader.onerror = () => {
-        setUploading(false);
-        alert("Failed to read file");
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      setUploading(false);
-      alert("Failed to upload image");
-    }
-  };
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Image must be under 5MB');
+    return;
+  }
+  setUploading(true);
+  const url = await uploadFile(file, 'news-images');
+  if (url) onChange(url);
+  else alert('Upload failed. Please try again.');
+  setUploading(false);
+};
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
