@@ -98,6 +98,7 @@ export default function UpdatesSection({
                 src={activityImage}
                 alt="Recent Activities"
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />

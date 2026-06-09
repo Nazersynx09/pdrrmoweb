@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   if (slug) {
     const {data, error} = await supabase
       .from('hazard_maps')
-      .select('*')
+      .select('id, title, slug, description, map_url, created_at')
       .eq('slug', slug)
       .single();
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
   const {data, error} = await supabase
     .from('hazard_maps')
-    .select('*')
+    .select('id, title, slug, created_at')
     .order('created_at', {ascending: false});
 
   if (error) {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
   const {data, error} = await supabase.from('hazard_maps').insert([{
     title, slug, description, map_url
-  }]).select().single();
+  }]).select('id, title, slug, created_at').single();
 
   if (error) {
     return NextResponse.json({success: false, error: error.message}, {status: 500});
@@ -72,7 +72,7 @@ export async function PUT(request: Request) {
   if (description) updates.description = description;
   if (map_url) updates.map_url = map_url;
 
-  const {data, error} = await supabase.from('hazard_maps').update(updates).eq('id', id).select().single();
+  const {data, error} = await supabase.from('hazard_maps').update(updates).eq('id', id).select('id, title, slug, created_at').single();
   if (error) {
     return NextResponse.json({success: false, error: error.message}, {status: 500});
   }
@@ -87,7 +87,7 @@ export async function DELETE(request: Request) {
   if (!id) {
     return NextResponse.json({success: false, error: 'ID is required'}, {status: 400});
   }
-  const {data, error} = await supabase.from('hazard_maps').delete().eq('id', id).select().single();
+  const {data, error} = await supabase.from('hazard_maps').delete().eq('id', id).select('id, title, slug, created_at').single();
   if (error) {
     return NextResponse.json({success: false, error: error.message}, {status: 500});
   }

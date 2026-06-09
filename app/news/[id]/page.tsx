@@ -218,6 +218,7 @@ export default function NewsDetailPage({
               src={displayNews.featured_image}
               alt={displayNews.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
               priority
             />

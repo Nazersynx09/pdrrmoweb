@@ -2,7 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["pdrrmoiloilo.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pdrrmoiloilo.com",
+      },
+    ],
+    qualities: [100, 75],
   },
 };
 

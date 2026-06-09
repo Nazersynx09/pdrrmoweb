@@ -327,6 +327,7 @@ export default function ResourcesPage() {
                     src={map.src}
                     alt={map.label}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     draggable={false}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -580,6 +581,7 @@ export default function ResourcesPage() {
                   src={lightboxSrc}
                   alt={lightboxLabel}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   draggable={false}
                   className="object-contain select-none"
                 />

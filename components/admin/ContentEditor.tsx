@@ -276,6 +276,7 @@ export default function ContentEditor({
                           src={block.imageUrl}
                           alt="Featured"
                           fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           className="object-cover"
                         />
                         <button
@@ -467,6 +468,7 @@ export default function ContentEditor({
                     src={block.imageUrl}
                     alt={block.imageCaption || ""}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover"
                   />
                 </div>

@@ -76,6 +76,7 @@ export default function ImageUpload({ value, onChange, label }: ImageUploadProps
               src={value}
               alt="Featured"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
               unoptimized={value.startsWith("data:")}
             />

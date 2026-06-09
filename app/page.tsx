@@ -29,6 +29,7 @@ const alerts = [
       "Flooding occurs in low-lying areas. Avoid crossing flooded roads.",
     color: "bg-orange-500",
   },
+  
 ];
 
 const issuances = [

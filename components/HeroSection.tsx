@@ -41,8 +41,9 @@ export default function HeroSection({
           src="/banner.png"
           alt="Background"
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
-          quality={100}
+          quality={75}
           className="
             object-cover
             object-center
@@ -72,10 +73,10 @@ export default function HeroSection({
               <p className="text-xs sm:text-sm uppercase tracking-[0.4em] text-orange-300 font-semibold mb-3">
                 Iloilo Provincial Government
               </p>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight tracking-tight">
-                Provincial Disaster Risk
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-5xl font-black leading-tight tracking-tight">
+                 Office of the Provincial Disaster Risk
                 <span className="block text-[#F58220]">
-                  Reduction & Management
+                  Reduction & Management Officer
                 </span>
               </h1>
               <p className="mt-4 text-sm sm:text-base uppercase tracking-[0.3em] text-slate-300">

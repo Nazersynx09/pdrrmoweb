@@ -42,6 +42,7 @@ function NewsCard({ item }: { item: NewsItem }) {
             src={item.featured_image}
             alt={item.title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -158,6 +159,7 @@ export default function NewsPage() {
               src={featuredNews.featured_image}
               alt={featuredNews.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover opacity-30"
               priority
             />

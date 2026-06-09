@@ -9,10 +9,11 @@ const supabase = createClient(
 export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('advisories')
-    .select('*')
+    .select('id, title, created_at, valid_until')
     .eq('is_active', true)
     .gt('valid_until', new Date().toISOString())
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(5); // Only return 5 records at a time
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
         is_active: true
       }
     ])
-    .select();
+    .select('id, title, created_at, valid_until');
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -70,7 +71,7 @@ export async function PUT(request: Request) {
     .from('advisories')
     .update(updates)
     .eq('id', id)
-    .select()
+    .select('id, title, created_at, valid_until')
     .single();
 
   if (error) {
@@ -92,7 +93,7 @@ export async function DELETE(request: Request) {
     .from('advisories')
     .delete()
     .eq('id', id)
-    .select()
+    .select('id, title, created_at, valid_until')
     .single();
 
   if (error) {
