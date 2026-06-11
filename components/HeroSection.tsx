@@ -41,7 +41,6 @@ export default function HeroSection({
           src="/banner.png"
           alt="Background"
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
           quality={75}
           className="
