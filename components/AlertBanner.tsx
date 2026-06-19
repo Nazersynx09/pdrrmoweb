@@ -48,7 +48,7 @@ export default function AlertBanner({ initialAlerts = [] }: AlertBannerProps) {
     
     const timer = setInterval(() => {
       setActiveAlert((prev) => (prev + 1) % alerts.length);
-    }, 5000);
+    }, 1000);
     
     return () => clearInterval(timer);
   }, [alerts.length]);

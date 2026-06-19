@@ -9,11 +9,10 @@ const supabase = createClient(
 export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('advisories')
-    .select('id, title, created_at, valid_until')
+    .select('id, title, content, severity, valid_from, valid_until')
     .eq('is_active', true)
     .gt('valid_until', new Date().toISOString())
-    .order('created_at', { ascending: false })
-    .limit(5); // Only return 5 records at a time
+    .order('created_at', { ascending: false });
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -28,10 +27,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { title, description, valid_until } = body;
+  const { title, content, valid_until } = body;
 
-  if (!title || !description || !valid_until) {
-    return NextResponse.json({ success: false, error: 'Title, description, and valid_until are required' }, { status: 400 });
+  if (!title || !content || !valid_until) {
+    return NextResponse.json({ success: false, error: 'Title, content, and valid_until are required' }, { status: 400 });
   }
 
   const { data, error } = await supabase
@@ -39,12 +38,12 @@ export async function POST(request: Request) {
     .insert([
       {
         title,
-        description,
+        content,
         valid_until: new Date(valid_until).toISOString(),
         is_active: true
       }
     ])
-    .select('id, title, created_at, valid_until');
+    .select('id, title, content, severity, valid_from, valid_until');
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -55,7 +54,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   const body = await request.json();
-  const { id, title, description, valid_until, is_active } = body;
+  const { id, title, content, valid_until, is_active } = body;
 
   if (!id) {
     return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
@@ -63,7 +62,7 @@ export async function PUT(request: Request) {
 
   const updates: Record<string, unknown> = {};
   if (title) updates.title = title;
-  if (description) updates.description = description;
+  if (content) updates.content = content;
   if (valid_until) updates.valid_until = new Date(valid_until).toISOString();
   if (typeof is_active === 'boolean') updates.is_active = is_active;
 
@@ -71,7 +70,7 @@ export async function PUT(request: Request) {
     .from('advisories')
     .update(updates)
     .eq('id', id)
-    .select('id, title, created_at, valid_until')
+    .select('id, title, content, severity, valid_from, valid_until')
     .single();
 
   if (error) {
@@ -93,7 +92,7 @@ export async function DELETE(request: Request) {
     .from('advisories')
     .delete()
     .eq('id', id)
-    .select('id, title, created_at, valid_until')
+    .select('id, title, content, severity, valid_from, valid_until')
     .single();
 
   if (error) {
