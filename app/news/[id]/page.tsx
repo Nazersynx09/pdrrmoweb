@@ -25,38 +25,6 @@ interface NewsItem {
   created_at: string;
 }
 
-const sampleJson = {
-  success: true,
-  data: {
-    id: "1",
-    title: "GAD Meeting on Strengthening Protection for Women and Children",
-    slug: "gad-meeting-strengthening-protection-women-children",
-    content: `The Gender and Development (GAD) Meeting focused on strengthening protection measures for women and children in disaster-prone areas. Key stakeholders from various municipalities gathered to discuss actionable strategies.
-
-The meeting addressed the unique vulnerabilities faced by women and children during disasters and emergencies. Participants included representatives from the provincial government, PDRRMO, local GAD focal points, and civil society organizations.
-
-## Key Objectives
-
-- Review existing protection protocols for women and children
-- Develop new guidelines for evacuation procedures
-- Coordinate with local government units for resource allocation
-- Establish communication channels for emergency alerts
-
-## Outcomes
-
-The meeting resulted in a comprehensive action plan that will be implemented over the next quarter. Key highlights include the establishment of women-friendly evacuation centers and the training of community volunteers on gender-sensitive disaster response.
-
-PDRRMO reminds the public to stay vigilant and prepared. For more information, contact the PDRRMO office at (033) 328-7920.`,
-    featured_image: "/gadMeeting.jpg",
-    excerpt:
-      "Key stakeholders gathered to discuss protection measures for women and children in disaster-prone areas during GAD Meeting.",
-    status: "published",
-    author_id: "admin",
-    published_at: "2026-04-14T10:00:00Z",
-    created_at: "2026-04-14T10:00:00Z",
-  },
-};
-
 export default function NewsDetailPage({
   params,
 }: {
@@ -108,7 +76,25 @@ export default function NewsDetailPage({
     );
   }
 
-  const displayNews = sampleJson.data;
+  if (!news) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="h-16 bg-[#002E5D]" />
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">News Not Found</h2>
+          <Link
+            href="/news"
+            className="inline-flex items-center gap-2 text-[#F58220] font-semibold hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to News
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const displayNews = news;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-PH", {

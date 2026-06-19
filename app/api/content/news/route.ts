@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   if (slug) {
     const { data, error } = await supabase
       .from('news')
-      .select('id, title, slug, excerpt, published_at')
+      .select('id, title, slug, content, excerpt, featured_image, published_at')
       .eq('slug', slug)
       .eq('status', 'published')
       .single();
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('news')
-    .select('id, title, slug, excerpt, published_at')
+    .select('id, title, slug, content, excerpt, featured_image, published_at')
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     excerpt: excerpt || content.substring(0, 150),
     status: status || 'draft',
     published_at: status === 'published' ? new Date().toISOString() : null,
-  }]).select('id, title, slug, excerpt, published_at').single();
+  }]).select('id, title, slug, content, excerpt, featured_image, published_at').single();
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
@@ -64,7 +64,9 @@ export async function PUT(request: Request) {
     updates.published_at = new Date().toISOString();
   }
 
-  const { data, error } = await supabase.from('news').update(updates).eq('id', id).select('id, title, slug, excerpt, published_at').single();
+  const { data, error } = await supabase.from('news').update(updates).eq('id', id)
+  .select('id, title, slug, content, excerpt, featured_image, published_at')
+  .single();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }

@@ -96,7 +96,7 @@ export default function NewsPage() {
         if (data.success && data.data) {
           const publishedNews = data.data;
           setFeaturedNews(publishedNews[0] || null);
-          setNews(publishedNews.slice(1));
+          setNews(publishedNews);
         }
       } catch (error) {
         console.error("Failed to fetch news:", error);
