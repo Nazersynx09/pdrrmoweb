@@ -54,8 +54,15 @@ export default function NewsPage() {
     
     try {
       const result = editingItem
-        ? await update(editingItem.id, formData)
-        : await create(formData);
+  ? await update(editingItem.id, {
+      ...formData,
+      published_at: editingItem.published_at, // preserve original date
+    })
+  : await create({
+      ...formData,
+      published_at: formData.status === "published" ? new Date().toISOString() : undefined, // set date if publishing immediately
+    });
+        
       
       if (result.success) {
         setShowForm(false);
