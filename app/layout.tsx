@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PDRRMO-Iloilo",
+  title: "Office of the Provincial Disaster Risk Reduction and Management Officer",
 };
 
 export default function RootLayout({

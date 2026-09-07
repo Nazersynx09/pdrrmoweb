@@ -12,14 +12,13 @@ import {
   Quote,
   Eye,
   X,
-  Bold,
-  Italic,
   List,
   ListOrdered,
   ArrowDown,
   ArrowUp,
   Upload,
 } from "lucide-react";
+import { uploadFile } from "@/lib/uploadFile";
 
 export type BlockType =
   | "paragraph"
@@ -54,9 +53,14 @@ export default function ContentEditor({
   const [activeBlock, setActiveBlock] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [uploadingBlock, setUploadingBlock] = useState<string | null>(null);
   const dragOverRef = useRef<number | null>(null);
 
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  const nextId = useRef(1);
+  const generateId = () => {
+    nextId.current += 1;
+    return `block-${nextId.current}`;
+  };
 
   const addBlock = (type: BlockType) => {
     const newBlock: ContentBlock = {
@@ -305,12 +309,22 @@ export default function ContentEditor({
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) => {
+                        disabled={uploadingBlock === block.id}
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = () => updateBlock(block.id, { imageUrl: reader.result as string });
-                          reader.readAsDataURL(file);
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert("Image must be under 5MB");
+                            e.target.value = "";
+                            return;
+                          }
+
+                          setUploadingBlock(block.id);
+                          const imageUrl = await uploadFile(file, "news-images");
+                          if (imageUrl) updateBlock(block.id, { imageUrl });
+                          else alert("Upload failed. Please try again.");
+                          setUploadingBlock(null);
+                          e.target.value = "";
                         }}
                       />
                     </label>

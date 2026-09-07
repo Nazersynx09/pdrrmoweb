@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminClient } from '../_auth';
 import {createClient} from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const advisoryAdminColumns = 'id, title, content, severity, valid_from, valid_until, is_active, created_at';
 
 export async function getAuthenticatedClient(request: Request) {
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -24,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await client
     .from('advisories')
-    .select('*')
+    .select(advisoryAdminColumns)
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -38,6 +35,9 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { title, content, image, severity, valid_from, valid_until, is_active } = body;
   if (!title) return NextResponse.json({ success: false, error: 'Title required' }, { status: 400 });
+  if (typeof image === 'string' && image.startsWith('data:')) {
+    return NextResponse.json({ success: false, error: 'Upload the image instead of embedding it in the advisory' }, { status: 413 });
+  }
 
   const { data, error } = await client.from('advisories').insert([{
     title,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     valid_from: valid_from || new Date().toISOString(),
     valid_until: valid_until || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     is_active: is_active ?? true,
-  }]).select().single();
+  }]).select(advisoryAdminColumns).single();
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
@@ -60,8 +60,12 @@ export async function PUT(request: NextRequest) {
   const body = await request.json();
   const { id, ...updates } = body;
   if (!id) return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
+  if (typeof updates.image === 'string' && updates.image.startsWith('data:')) {
+    return NextResponse.json({ success: false, error: 'Upload the image instead of embedding it in the advisory' }, { status: 413 });
+  }
+  if (updates.image === '') delete updates.image;
 
-  const { data, error } = await client.from('advisories').update(updates).eq('id', id).select().single();
+  const { data, error } = await client.from('advisories').update(updates).eq('id', id).select(advisoryAdminColumns).single();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
 }
