@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Search, Map, Image } from 'lucide-react';
 import { useAdminApi } from "@/lib/hooks/useAdminApi";
+import ImageUpload from '@/components/ImageUpload';
 
 interface HazardMap {
   id: string;
