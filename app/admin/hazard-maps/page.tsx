@@ -10,9 +10,7 @@ interface HazardMap {
   title: string;
   type: 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami';
   file_url: string;
-  thumbnail: string;
   description: string;
-  is_active: boolean;
   created_at: string;
 }
 
@@ -29,17 +27,46 @@ export default function HazardMapsPage() {
   const [formData, setFormData] = useState({
     title: '',
     type: 'flood' as 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami',
-    file_url: '',
-    thumbnail: '',
     description: '',
-    is_active: true,
   });
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const filteredMaps = maps.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === 'all' || item.type === typeFilter;
     return matchesSearch && matchesType;
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+
+  if (!file) {
+    setSelectedFile(null);
+    return;
+  }
+
+  // PNG validation
+  if (file.type !== 'image/png') {
+    setFormError('Please upload a PNG file only.');
+    e.target.value = '';
+    setSelectedFile(null);
+    return;
+  }
+
+  // Maximum 10 MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  if (file.size > MAX_FILE_SIZE) {
+    setFormError('The PNG file must not exceed 10 MB.');
+    e.target.value = '';
+    setSelectedFile(null);
+    return;
+  }
+
+  setFormError(null);
+  setSelectedFile(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,10 +97,7 @@ export default function HazardMapsPage() {
     setFormData({
       title: item.title,
       type: item.type,
-      file_url: item.file_url,
-      thumbnail: item.thumbnail,
       description: item.description,
-      is_active: item.is_active,
     });
     setShowForm(true);
   };
@@ -85,13 +109,6 @@ export default function HazardMapsPage() {
     }
   };
 
-  const toggleActive = async (id: string) => {
-    const item = maps.find(m => m.id === id);
-    if (item) {
-      await update(id, { is_active: !item.is_active });
-      refetch();
-    }
-  };
 
   const getTypeBadge = (type: string) => {
     const styles = {
@@ -126,7 +143,6 @@ export default function HazardMapsPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ title: '', type: 'flood', file_url: '', thumbnail: '', description: '', is_active: true });
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -170,15 +186,13 @@ export default function HazardMapsPage() {
               <tr>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Title</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Type</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">File URL</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredMaps.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
                     No hazard maps found
                   </td>
                 </tr>
@@ -199,21 +213,7 @@ export default function HazardMapsPage() {
                     <td className="px-4 py-4">
                       {getTypeBadge(item.type)}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
-                      <span className="truncate block max-w-[200px]">{item.file_url}</span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <button
-                        onClick={() => toggleActive(item.id)}
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
-                          item.is_active 
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                        }`}
-                      >
-                        {item.is_active ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
+                    
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -266,7 +266,7 @@ export default function HazardMapsPage() {
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-black"
                   placeholder="Enter hazard map title"
                 />
               </div>
@@ -276,7 +276,7 @@ export default function HazardMapsPage() {
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami' })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-black"
                 >
                   <option value="flood">Flood</option>
                   <option value="landslide">Landslide</option>
@@ -291,47 +291,43 @@ export default function HazardMapsPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-black"
                   rows={3}
                   placeholder="Brief description of the hazard map"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">File URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hazard Map PNG
+                </label>
+
                 <input
-                  type="text"
-                  required
-                  value={formData.file_url}
-                  onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                  placeholder="/hazard-maps/example.pdf"
+                  type="file"
+                  accept="image/png,.png"
+                  required={!editingItem}
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg 
+                    focus:outline-none focus:ring-2 focus:ring-[#F58220] 
+                    text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg 
+                    file:border-0 file:text-sm file:font-medium 
+                    file:bg-[#002E5D] file:text-white hover:file:bg-[#001f45]"
                 />
+
+                <p className="mt-1 text-xs text-gray-500">
+                  PNG format only. Maximum file size: 10 MB.
+                </p>
+
+                {selectedFile && (
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
+                    <p className="font-medium">{selectedFile.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
-                <input
-                  type="text"
-                  value={formData.thumbnail}
-                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                  placeholder="/hazard-maps/thumbnails/example.jpg"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="is_active" className="text-sm text-gray-700">Active</label>
-                </div>
-              </div>
 
                 {formError && (
                 <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm mb-4">
