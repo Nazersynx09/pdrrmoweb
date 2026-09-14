@@ -56,7 +56,8 @@ const issuances = [
 ];
 
 const contactInfo = {
-  phone: "(033) 328-7920",
+  phone1: "(033) 328-7920",
+  phone2: "(+63) 920-946-8233",
   email: "pdrrmo@iloilo.gov.ph",
   address1: "Iloilo Provincial Capitol, Bonifacio Drive, Iloilo City",
   address2: "Magsaysay Village, Lapaz, Iloilo",
@@ -67,7 +68,8 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
       <AlertBanner />
       <HeroSection
-        phone={contactInfo.phone}
+        phone1={contactInfo.phone1}
+        phone2={contactInfo.phone2}
         email={contactInfo.email}
         address1={contactInfo.address1}
         address2={contactInfo.address2}

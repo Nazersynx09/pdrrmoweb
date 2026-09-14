@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Newspaper, AlertTriangle,
   Map, FileText, FileUp, LogOut, Menu, X,
+  GripVertical,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -17,6 +18,7 @@ const menuItems = [
   { href: '/admin/hazard-maps', label: 'Hazard Maps', icon: Map },
   { href: '/admin/resources', label: 'Resources', icon: FileText },
   { href: '/admin/issuances', label: 'Issuances', icon: FileUp },
+  { href: '/admin/carousel', label: 'Carousel Slides', icon: GripVertical },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

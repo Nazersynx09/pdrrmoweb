@@ -14,34 +14,10 @@ interface Slide {
   ctaLink: string;
 }
 
-const slides: Slide[] = [
-  {
-    title: "EARTHQUAKE PREPAREDNESS",
-    type: "Safety Guide",
-    image: "/FloodIEC.png",
-    description: "Learn essential earthquake safety tips and preparedness measures",
-    cta: "Download Guide",
-    ctaLink: "/resources",
-  },
-  {
-    title: "FLOOD SAFETY",
-    type: "Water Level Advisory",
-    image: "/FloodIEC.png",
-    description: "Stay safe during flooding events - know your evacuation routes",
-    cta: "View Hazard Maps",
-    ctaLink: "/resources",
-  },
-  {
-    title: "TYPHOON PREPAREDNESS",
-    type: "Emergency Response",
-    image: "/FloodIEC.png",
-    description: "Prepare your family and home for typhoon season",
-    cta: "Emergency Checklist",
-    ctaLink: "/resources",
-  },
-];
 
 export default function Carousel() {
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const progressRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -49,31 +25,61 @@ export default function Carousel() {
   const DURATION = 4000;
   const SWIPE_THRESHOLD = 50;
 
+  useEffect(() => {
+    async function fetchSlides() {
+      try {
+        const res = await fetch("/api/content/carousel");
+        const data = await res.json();
+        if (data.success && data.data?.length > 0) {
+          setSlides(
+            data.data.map((s: any) => ({
+              title: s.title,
+              type: s.type,
+              image: s.image,
+              description: s.description,
+              cta: s.cta,
+              ctaLink: s.cta_link,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch carousel slides:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSlides();
+  }, []);
+
   const handleNextSlide = () =>
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   const handlePrevSlide = () =>
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchEndX.current = null;
+    touchStartX.current = e.changedTouches[0].screenX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
+    touchEndX.current = e.changedTouches[0].screenX;
   };
 
   const handleTouchEnd = () => {
-    if (touchStartX.current === null || touchEndX.current === null) return;
+    if (!touchStartX.current || !touchEndX.current) return;
     const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) >= SWIPE_THRESHOLD) {
-      diff > 0 ? handleNextSlide() : handlePrevSlide();
+    if (Math.abs(diff) > SWIPE_THRESHOLD) {
+      if (diff > 0) {
+        handleNextSlide();
+      } else {
+        handlePrevSlide();
+      }
     }
     touchStartX.current = null;
     touchEndX.current = null;
   };
 
-  useEffect(() => {
+   useEffect(() => {
+    if (slides.length === 0) return;
     const bar = progressRef.current;
     if (!bar) return;
     bar.style.transition = "none";
@@ -91,8 +97,11 @@ export default function Carousel() {
       cancelAnimationFrame(raf);
       clearTimeout(timer);
     };
-  }, [currentSlide]);
+  }, [currentSlide, slides.length]);
 
+   if (loading || slides.length === 0) {
+    return null;
+  }
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
       <div className="max-w-6xl mx-auto px-3 sm:px-6">
@@ -118,9 +127,9 @@ export default function Carousel() {
                   src={slide.image}
                   alt={slide.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   className="object-cover"
                   priority={i === 0}
+                  unoptimized={slide.image?.startsWith("data:")}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/80 sm:via-black/50 sm:to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />

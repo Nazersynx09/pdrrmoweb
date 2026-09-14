@@ -1,6 +1,6 @@
 'use client';
 
-import { Newspaper, AlertTriangle, Map, FileText, FileUp, Activity } from 'lucide-react';
+import { Newspaper, AlertTriangle, Map, FileText, FileUp, GripVertical, Activity } from 'lucide-react';
 
 const stats = [
   { label: 'News & Updates', count: 12, icon: Newspaper, color: 'bg-[#002E5D]' },
@@ -8,6 +8,7 @@ const stats = [
   { label: 'Hazard Maps', count: 8, icon: Map, color: 'bg-red-500' },
   { label: 'Resources', count: 24, icon: FileText, color: 'bg-green-500' },
   { label: 'Issuances', count: 15, icon: FileUp, color: 'bg-purple-500' },
+  { label: 'Carousel Slides', count: 5, icon: GripVertical, color: 'bg-blue-500' },
 ];
 
 const recentActivity = [

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Phone, Mail, LocateIcon, ArrowRight, MapPin } from "lucide-react";
 
 interface HeroSectionProps {
-  phone: string;
+  phone?: string;
+  phone1?: string;
+  phone2?: string;
   email: string;
   address1: string;
   address2: string;
@@ -11,6 +13,8 @@ interface HeroSectionProps {
 
 export default function HeroSection({
   phone,
+  phone1,
+  phone2,
   email,
   address1,
   address2,
@@ -93,7 +97,8 @@ export default function HeroSection({
                 Hotline
               </span>
             </div>
-            <p className="font-bold text-lg">{phone}</p>
+            <p className="font-bold text-lg">{phone || phone1}</p>
+            {phone2 && <p className="font-bold text-lg">{phone2}</p>}
           </div>
           <div className="rounded-2xl border border-white/20 bg-white/10 p-5 text-white shadow-xl backdrop-blur-sm">
             <div className="flex items-center gap-3 text-orange-200 mb-2">
