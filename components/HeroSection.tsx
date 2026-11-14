@@ -1,6 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Phone, Mail, LocateIcon, ArrowRight, MapPin } from "lucide-react";
+import { Phone, Mail, LocateIcon } from "lucide-react";
 
 interface HeroSectionProps {
   phone?: string;
@@ -68,6 +67,9 @@ export default function HeroSection({
                 alt="PDRRMO Logo"
                 width={400}
                 height={400}
+                loading="eager"
+                quality={100}
+                priority
                 className="object-contain w-full h-full"
               />
             </div>

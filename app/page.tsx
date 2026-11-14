@@ -11,26 +11,26 @@ import QuickLinks from "@/components/QuickLinks";
 import Footer from "@/components/Footer";
 
 
-const alerts = [
-  {
-    level: "info",
-    message: "Stay informed with the latest weather updates from PAGASA",
-    color: "bg-blue-600",
-  },
-  {
-    level: "warning",
-    message:
-      "Southwest monsoon season continues. Please prepare emergency kits and know your evacuation routes.",
-    color: "bg-amber-500",
-  },
-  {
-    level: "watch",
-    message:
-      "Flooding occurs in low-lying areas. Avoid crossing flooded roads.",
-    color: "bg-orange-500",
-  },
+// const alerts = [
+//   {
+//     level: "info",
+//     message: "Stay informed with the latest weather updates from PAGASA",
+//     color: "bg-blue-600",
+//   },
+//   {
+//     level: "warning",
+//     message:
+//       "Southwest monsoon season continues. Please prepare emergency kits and know your evacuation routes.",
+//     color: "bg-amber-500",
+//   },
+//   {
+//     level: "watch",
+//     message:
+//       "Flooding occurs in low-lying areas. Avoid crossing flooded roads.",
+//     color: "bg-orange-500",
+//   },
   
-];
+// ];
 
 const issuances = [
   {
