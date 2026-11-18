@@ -14,6 +14,8 @@ interface Slide {
   ctaLink: string;
 }
 
+type ApiSlide = Omit<Slide, "ctaLink"> & { cta_link: string | null };
+
 
 export default function Carousel() {
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -29,17 +31,16 @@ export default function Carousel() {
     async function fetchSlides() {
       try {
         const res = await fetch("/api/content/carousel");
-        const data = await res.json();
-        if (data.success && data.data?.length > 0) {
+        const data = (await res.json()) as {
+          success: boolean;
+          data?: ApiSlide[];
+        };
+        if (data.success && data.data && data.data.length > 0) {
           setSlides(
-            data.data.map((s: any) => ({
-              title: s.title,
-              type: s.type,
-              image: s.image,
-              description: s.description,
-              cta: s.cta,
-              ctaLink: s.cta_link,
-            }))
+            data.data.map(({ cta_link, ...slide }) => ({
+              ...slide,
+              ctaLink: cta_link || "/",
+            })),
           );
         }
       } catch (error) {
@@ -146,6 +147,8 @@ export default function Carousel() {
                   </p>
                   <Link
                     href={slide.ctaLink}
+                    target={/^https:\/\//i.test(slide.ctaLink) ? "_blank" : undefined}
+                    rel={/^https:\/\//i.test(slide.ctaLink) ? "noopener noreferrer" : undefined}
                     className="inline-flex items-center gap-2 bg-[#F58220] hover:bg-orange-600 text-white font-bold text-sm sm:text-base py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition-all"
                   >
                     {slide.cta}

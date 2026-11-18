@@ -5,31 +5,88 @@ import Link from "next/link";
 import { 
   MapPin, Globe, X, ZoomIn, ZoomOut, Home, Waves, Flame, CloudRain, 
   Truck, Toolbox, ShieldCheck, Users, Target, FileText, Clock, 
-  Shield, AlertTriangle, ArrowRight, Building2, GraduationCap, Heart, HandHeart
+  Shield, AlertTriangle, ArrowRight, Building2, GraduationCap, Heart, HandHeart,
 } from "lucide-react";
 import { useState, useCallback } from "react";
 import Footer from "@/components/Footer";
 
 const councilMembers = [
   { name: "Hon. Arthur R. Defensor Jr.", position: "Provincial Governor & PDRRMC Chairman", role: "Chairperson" },
-  { name: "Hon. Christine E. Garin", position: "Provincial Vice Governor", role: "Co-Chairperson" },
-  { name: "Engr. Jose R. Cinco", position: "Provincial DRRM Officer", role: "Vice Chairperson for Operations" },
-  { name: "PCOL Dennis B. Asuncion", position: "Provincial Director, PNP Iloilo", role: "Member" },
-  { name: "FDir. Marc J. Ofil", position: "Provincial Fire Marshal, BFP Iloilo", role: "Member" },
-  { name: "Dr. Maria Theresa S. Tirona", position: "Provincial Health Officer", role: "Member" },
-  { name: "Engr. Antonio G. M. Abellada", position: "Provincial Engineer", role: "Member" },
-  { name: "Dir. Ramoncito L. H. Fernandez", position: "Provincial Director, DILG", role: "Member" },
+  { name: "Department of Science and technology - Iloilo", position: "Vice-Chairperson for Prevention and Mitigation", role: "Vice-Chairperson" },
+  { name: "Department of Interior and Local Government - Iloilo", position: "Vice Chairperson for Preparedness", role: "Vice-Chairperson" },
+  { name: "Provincial Social Welfare and Development Office", position: "Vice-Chairperson for Response", role: "Vice-Chairperson" },
+  { name: "Provincial Planning and Development Coordinator", position: "Vice-Chairperson for Rehabilitation and Recovery", role: "Vice-Chairperson" },
+  { name: "Representative of the Sangguniang Panlalawigan President", role: "Member" },
+  { name: "Philippine Councilor's League - Iloilo", role: "Member" },
+  { name: "President, Liga ng mga Punong Barangay - Iloilo", role: "Member" },
 ];
+
+const ProvincialOffices = [
+  // Provincial Offices
+  { name: "Information Communication Technology Management Office", role: "Member" },
+  { name: "General Services Office", role: "Member" },
+  { name: "Hospital Management Office", role: "Member" },
+  { name: "Provincial Administrator's Office", role: "Member" },
+  { name: "Provincial Agriculture Office", role: "Member" },
+  { name: "Provincial Budget Office", role: "Member" },
+  { name: "Provincial Disaster Risk Reduction & Management Office", role: "Member" },
+  { name: "Provincial Engineer's Office", role: "Member" },
+  { name: "Provincial Environment & Natural Resources Office", role: "Member" },
+  { name: "Provincial Health Office", role: "Member" },
+  { name: "Provincial Planning and Development Office", role: "Member" },
+  { name: "Gender and Development Division - PPDO", role: "Member" },
+  { name: "Provincial Social Welfare & Development Office", role: "Member" },
+  { name: "Provincial Tourism Office", role: "Member" },
+  { name: "Provincial Trade Investment & Cooperatives Development Office", role: "Member" },
+  { name: "Provincial Treasurer's Office", role: "Member" },
+  { name: "Provincial Veterinary Office", role: "Member" },
+]
 
 const memberAgencies = [
   { name: "Philippine National Police - Iloilo", icon: Shield },
+  { name: "Armed Forces of the Philippines - 6th Infantry Division", icon: Shield },
+  { name: "Philippine Coast Guard - Iloilo District", icon: Waves },
   { name: "Bureau of Fire Protection - Iloilo", icon: Flame },
-  { name: "Department of Health - Western Visayas", icon: Heart },
+  { name: "Office of the Civil Defense VI", icon: ShieldCheck },
   { name: "Department of Education - Iloilo", icon: GraduationCap },
   { name: "DILG Iloilo", icon: Building2 },
-  { name: "Provincial Engineering Office", icon: Toolbox },
-  { name: "Provincial Social Welfare Office", icon: HandHeart },
-  { name: "Private Sector Representatives", icon: Users },
+  { name: "Philippine Red Cross - Iloilo Chapter", icon: HandHeart },
+  { name: "Department of Science and Technology - Iloilo", icon: Globe },
+  { name: "Philippine Atmospheric, Geophysical and Astronomical Services Administration (PAGASA) - Iloilo", icon: CloudRain },
+  { name: "Philippine Information Agency - Iloilo", icon: Globe },
+  { name: "Department of Public Works and Highways - Iloilo", icon: Truck },
+  { name: "Department of Agrarian Reform - Iloilo", icon: HandHeart },
+  { name: "Department of Transportation", icon: HandHeart },
+  { name: "Civil Aviation Authority VI", icon: HandHeart },
+  { name: "Department of Trade and Industry - Iloilo", icon: HandHeart },
+  { name: "Department of Tourism VI", icon: HandHeart },
+  { name: "Regional Maritime Unit 6", icon: HandHeart },
+  { name: "Philippine Crop Insurance Corporation - Iloilo", icon: HandHeart },
+  { name: "National Food Authority - Iloilo", icon: HandHeart },
+  { name: "National Irrigation Administration - Iloilo", icon: HandHeart },
+  { name: "Technical Education and Skills Development Authority - Iloilo", icon: HandHeart },
+  { name: "National Telecommunications Commission - Iloilo", icon: HandHeart },
+  { name: "Iloilo Electric Companies (I, II & III)", icon: HandHeart },
+  { name: "Philippine Information Agency - Iloilo", icon: HandHeart },
+
+  
+    // Accredited Civil Society Organizations (CSOs)
+  { name: "Iloilo Provincial Federation of Associations of Persons with Disabilities (IPFADPWD), Inc.", role: "Member" },
+  { name: "Creative Community Foundation, Inc.", role: "Member" },
+  { name: "Association of Dedicated Values Ordained Chaplain Advocators Towards Excellence Services, Inc. (ADVOCATES, INC. - ILOILO)", role: "Member" },
+  { name: "Iloilo Federation Fire Brigade, Inc.", role: "Member" },
+  { name: "Zoological Society of London-CMRP Philippines, Inc.", role: "Member" },
+  { name: "Philippine Alliance of Volunteer Communicators and Responders for Emergency Services Inc. (PAVCARES INC)", role: "Member" },
+  { name: "Regional Coordinator, Homeless Peoples Federation Philippines Inc. (HPFPI)", role: "Member" },
+  { name: "Samahan Defense Force Multiplier (SDFM) Inc.", role: "Member" },
+  { name: "Iloilo Caucus of Development Non Organization Inc.", role: "Member" },
+
+  // Private Sector Representatives
+  { name: "Dingle Multi-Purpose Cooperative", role: "Member" },
+  { name: "Western Visayas Caving Association, Inc.", role: "Member" },
+
+  // Academe Representative
+  { name: "Iloilo Science and Technology University", role: "Member" }
 ];
 
 export default function AboutPDRRMC() {
@@ -148,39 +205,43 @@ export default function AboutPDRRMC() {
           </div>
         </div>
 
-        {/* Member Agencies */}
+        {/* Provincial Offices */}
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-[#002E5D] text-center mb-2">Member Agencies</h2>
-          <p className="text-gray-500 text-center mb-8">Government agencies and organizations represented in the council</p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {memberAgencies.map((agency, i) => (
+          <h2 className="text-2xl font-bold text-[#002E5D] text-center mb-2">Provincial Offices</h2>
+          <p className="text-gray-500 text-center mb-8">Key provincial offices and departments</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {ProvincialOffices.map((office, i) => (
               <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition">
                 <div className="w-10 h-10 rounded-lg bg-[#002E5D] flex items-center justify-center shrink-0">
-                  <agency.icon className="w-5 h-5 text-white" />
+                  <Building2 className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">{agency.name}</span>
+                <span className="text-sm font-medium text-gray-700">{office.name}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Official Logo */}
-        {/* <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-[#002E5D] text-center mb-8">PDRRMC Official</h2>
-          <div className="flex flex-col items-center">
-            <Image
-              src="/pdrrmoLogo.png"
-              alt="PDRRMC Logo"
-              width={180}
-              height={180}
-              className="w-44 h-44 object-contain mb-6"
-            />
-            <h3 className="text-xl font-bold text-[#002E5D]">Provincial Disaster Risk Reduction and Management Council</h3>
-            <p className="text-[#F58220] font-bold text-lg">(PDRRMC)</p>
-            <p className="text-gray-500 text-center mt-2">Province of Iloilo</p>
+        {/* Member Agencies */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
+          <h2 className="text-2xl font-bold text-[#002E5D] text-center mb-2">Member Agencies and Organizations</h2>
+          <p className="text-gray-500 text-center mb-8">Government agencies and organizations represented in the council</p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {memberAgencies.map((agency, i) => {
+              const AgencyIcon = agency.icon ?? Building2;
+
+              return (
+                <div key={i} className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition">
+                  <div className="w-10 h-10 rounded-lg bg-[#002E5D] flex items-center justify-center shrink-0">
+                    <AgencyIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{agency.name}</span>
+                </div>
+              );
+            })}
           </div>
-        </div> */}
+        </div>
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

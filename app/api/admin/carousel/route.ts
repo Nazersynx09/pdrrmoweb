@@ -1,10 +1,41 @@
-import { NextResponse } from 'next/server';
-import { supabase as supabaseAdmin } from '@/lib/supabaseClient';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAdminClient } from '../_auth';
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message;
+  }
+  return 'Unexpected carousel API error';
+}
+
+function isValidCtaLink(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+
+  const link = value.trim();
+  if (link.startsWith('/') && !link.startsWith('//')) return true;
+
+  try {
+    return new URL(link).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 // GET - Admin: all slides (active + inactive)
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const client = await getAdminClient(request);
+  if (!client) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await client
       .from('carousel_slides')
       .select('*')
       .order('display_order', { ascending: true });
@@ -15,26 +46,31 @@ export async function GET() {
   } catch (error) {
     console.error('Failed to fetch carousel slides:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch carousel slides' },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
 
 // POST - Admin: create slide
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const client = await getAdminClient(request);
+  if (!client) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { title, type, image, description, cta, cta_link, display_order, is_active } = body;
 
-    if (!title || !image) {
+    if (!title || !image || !isValidCtaLink(cta_link)) {
       return NextResponse.json(
-        { success: false, error: 'Title and image are required' },
+        { success: false, error: 'Title, image, and a valid button link are required' },
         { status: 400 }
       );
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await client
       .from('carousel_slides')
       .insert({
         title,
@@ -42,7 +78,7 @@ export async function POST(request: Request) {
         image,
         description: description || '',
         cta: cta || 'Learn More',
-        cta_link: cta_link || '/',
+        cta_link: cta_link.trim(),
         display_order: display_order ?? 1,
         is_active: is_active ?? true,
       })
@@ -55,14 +91,19 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Failed to create carousel slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create carousel slide' },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
 
 // PUT - Admin: update slide
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  const client = await getAdminClient(request);
+  if (!client) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { id, ...updates } = body;
@@ -71,7 +112,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    if ('cta_link' in updates) {
+      if (!isValidCtaLink(updates.cta_link)) {
+        return NextResponse.json(
+          { success: false, error: 'Button link must be an HTTPS URL or a site path' },
+          { status: 400 }
+        );
+      }
+      updates.cta_link = updates.cta_link.trim();
+    }
+
+    const { data, error } = await client
       .from('carousel_slides')
       .update(updates)
       .eq('id', id)
@@ -84,14 +135,19 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error('Failed to update carousel slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update carousel slide' },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
 }
 
 // DELETE - Admin: remove slide
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  const client = await getAdminClient(request);
+  if (!client) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -100,7 +156,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 });
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await client
       .from('carousel_slides')
       .delete()
       .eq('id', id);
@@ -111,7 +167,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error('Failed to delete carousel slide:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to delete carousel slide' },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

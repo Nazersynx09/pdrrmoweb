@@ -11,12 +11,29 @@ export async function GET(request: Request) {
   const slug = searchParams.get('slug');
 
   if (slug) {
-    const { data, error } = await supabase
+    const { data: slugMatch, error: slugError } = await supabase
       .from('news')
       .select('id, title, slug, content, excerpt, featured_image, published_at')
       .eq('slug', slug)
       .eq('status', 'published')
-      .single();
+      .order('published_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (slugError) {
+      return NextResponse.json({ success: false, error: slugError.message }, { status: 500 });
+    }
+
+    if (slugMatch) {
+      return NextResponse.json({ success: true, data: slugMatch });
+    }
+
+    const { data, error } = await supabase
+      .from('news')
+      .select('id, title, slug, content, excerpt, featured_image, published_at')
+      .eq('id', slug)
+      .eq('status', 'published')
+      .maybeSingle();
 
     if (error || !data) {
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });

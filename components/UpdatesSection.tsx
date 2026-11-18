@@ -6,18 +6,39 @@ import Link from "next/link";
 import { ExternalLink, Activity, ArrowRight } from "lucide-react";
 
 interface Issuance {
+  id: string;
   text: string;
   href: string;
   date: string;
 }
 
+interface LatestNews {
+  id: string;
+  title: string;
+  featured_image: string | null;
+  excerpt: string;
+  published_at: string | null;
+}
+
 interface UpdatesSectionProps {
   issuances: Issuance[];
-  activityImage?: string;
-  activityDate?: string;
-  activityTitle?: string;
-  activityLink?: string;
+  issuancesLoading?: boolean;
+  issuancesError?: string | null;
+  latestNews: LatestNews | null;
+  newsLoading?: boolean;
+  newsError?: string | null;
 }
+
+const formatNewsDate = (dateString: string) => {
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-PH", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Manila",
+  });
+};
 
 const formatPhilippineTime = (date: Date) =>
   new Intl.DateTimeFormat("en-PH", {
@@ -32,10 +53,11 @@ const formatPhilippineTime = (date: Date) =>
 
 export default function UpdatesSection({ 
   issuances,
-  activityImage = "/gadMeeting.jpg",
-  activityDate = "March 26, 2026",
-  activityTitle = "GAD Meeting on Strengthening Protection for Women and Children",
-  activityLink = "/programs-services"
+  issuancesLoading = false,
+  issuancesError = null,
+  latestNews,
+  newsLoading = false,
+  newsError = null,
 }: UpdatesSectionProps) {
   const [phTime, setPhTime] = useState<string>(() =>
     formatPhilippineTime(new Date()),
@@ -65,25 +87,41 @@ export default function UpdatesSection({
               </h3>
             </div>
             <div className="p-4 space-y-3">
-              {issuances.map((issuance, i) => (
-                <a
-                  key={i}
-                  href={issuance.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#F58220] hover:bg-orange-50 group transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-[#F58220] bg-orange-100 px-2 py-1 rounded">
-                      {issuance.date}
-                    </span>
-                    <span className="text-sm text-[#002E5D] font-medium group-hover:text-[#F58220]">
-                      {issuance.text}
-                    </span>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#F58220]" />
-                </a>
-              ))}
+              {issuancesLoading ? (
+                <p className="py-4 text-center text-sm text-gray-500">
+                  Loading issuances...
+                </p>
+              ) : issuancesError ? (
+                <p role="alert" className="py-4 text-center text-sm text-red-700">
+                  {issuancesError}
+                </p>
+              ) : issuances.length === 0 ? (
+                <p className="py-4 text-center text-sm text-gray-500">
+                  No issuances available.
+                </p>
+              ) : (
+                issuances.map((issuance) => (
+                  <a
+                    key={issuance.id}
+                    href={issuance.href || undefined}
+                    target={issuance.href ? "_blank" : undefined}
+                    rel={issuance.href ? "noopener noreferrer" : undefined}
+                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#F58220] hover:bg-orange-50 group transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-[#F58220] bg-orange-100 px-2 py-1 rounded">
+                        {issuance.date}
+                      </span>
+                      <span className="text-sm text-[#002E5D] font-medium group-hover:text-[#F58220]">
+                        {issuance.text}
+                      </span>
+                    </div>
+                    {issuance.href && (
+                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#F58220]" />
+                    )}
+                  </a>
+                ))
+              )}
             </div>
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
               <Link href="/resources" className="text-sm font-bold text-[#002E5D] hover:text-[#F58220] flex items-center gap-1">
@@ -93,29 +131,70 @@ export default function UpdatesSection({
           </div>
 
           <div className="rounded-xl overflow-hidden shadow-md bg-white">
-            <div className="relative h-100">
-              <Image
-                src={activityImage}
-                alt="Recent Activities"
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <p className="text-xs font-semibold text-orange-300 uppercase">
-                  {activityDate}
-                </p>
-                <p className="text-lg font-bold text-white">
-                  {activityTitle}
-                </p>
+            {newsLoading ? (
+              <div className="flex h-100 items-center justify-center text-sm text-gray-500">
+                Loading latest news...
               </div>
-            </div>
-            <div className="p-4">
-              <Link href={activityLink} className="text-sm font-bold text-[#002E5D] hover:text-[#F58220] flex items-center gap-1">
-                View Activity <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+            ) : newsError ? (
+              <div role="alert" className="flex h-100 items-center justify-center p-6 text-center text-sm text-red-700">
+                {newsError}
+              </div>
+            ) : latestNews ? (
+              <>
+                <div className="relative h-100 bg-[#002E5D]">
+                  {latestNews.featured_image ? (
+                    <Image
+                      src={latestNews.featured_image}
+                      alt={latestNews.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/20">
+                      N
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="text-xs font-semibold text-orange-300 uppercase">
+                      Latest News
+                      {latestNews.published_at
+                        ? ` · ${formatNewsDate(latestNews.published_at)}`
+                        : ""}
+                    </p>
+                    <p className="text-lg font-bold text-white">
+                      {latestNews.title}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4">
+                  {latestNews.excerpt && (
+                    <p className="mb-3 line-clamp-2 text-sm text-gray-600">
+                      {latestNews.excerpt}
+                    </p>
+                  )}
+                  <Link
+                    href={`/news/${latestNews.id}`}
+                    className="flex items-center gap-1 text-sm font-bold text-[#002E5D] hover:text-[#F58220]"
+                  >
+                    Read Latest News <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="flex h-100 flex-col items-center justify-center p-6 text-center">
+                <p className="mb-3 text-sm text-gray-500">
+                  No published news available.
+                </p>
+                <Link
+                  href="/news"
+                  className="flex items-center gap-1 text-sm font-bold text-[#002E5D] hover:text-[#F58220]"
+                >
+                  View All News <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

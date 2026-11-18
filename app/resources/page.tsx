@@ -1,152 +1,74 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
-  MapPin,
-  Globe,
   FileText,
   Map,
   Award,
-  ExternalLink,
+  Eye,
   X,
   ZoomIn,
   ZoomOut,
   Download,
   RotateCcw,
 } from "lucide-react";
-import { FaFacebookF } from "react-icons/fa";
 import { useState, useRef, useEffect, useCallback } from "react";
 import Footer from "@/components/Footer";
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
+interface HazardMap {
+  id: string;
+  title: string;
+  type: string;
+  file_url: string | null;
+  thumbnail: string | null;
+  description: string;
+}
 
-const hazardMaps = [
-  {
-    id: 1,
-    label: "Flood Hazard Map",
-    src: "/floodingHazard.tif",
-    desc: "Flood risk zones across Iloilo Province",
-  },
-  {
-    id: 2,
-    label: "Storm Surge Map",
-    src: "/stormSurgeHazard.tif",
-    desc: "Coastal storm surge susceptibility areas",
-  },
-  {
-    id: 3,
-    label: "Landslide Map",
-    src: "/rainInducedLandslide.tif",
-    desc: "Landslide-prone zones and evacuation routes",
-  },
-  {
-    id: 4,
-    label: "Tsunami Hazard Map",
-    src: "/Tsunami.tif",
-    desc: "Tsunami risk zones across Iloilo Province",
-  },
-  {
-    id: 5,
-    label: "EIL West Panay Fault Map (S.2)",
-    src: "/eilScenario2WestPanayFault.tif",
-    desc: "EIL risk zones across Iloilo Province (S.2)",
-  },
-  {
-    id: 6,
-    label: "EIL Negros Trench (S.6)",
-    src: "/eilScenario6NegrosTrench.tif",
-    desc: "EIL risk zones across Iloilo Province (S.6)",
-  },
-  {
-    id: 7,
-    label: "Groundshaking West Panay Fault Map (S.2)",
-    src: "/groundshakingScenario2WestPanay.tif",
-    desc: "Groundshaking risk zones across Iloilo Province (S.2)",
-  },
-  {
-    id: 8,
-    label: "Groundshaking Negros Trench (S.6)",
-    src: "/groundshakingScenario6NegrosTrench.tif",
-    desc: "Groundshaking risk zones across Iloilo Province (S.6)",
-  },
-  {
-    id: 9,
-    label: "Liquefaction West Panay Fault Map (S.2)",
-    src: "/liquefactionScenario2WestPanay.tif",
-    desc: "Liquefaction risk zones across Iloilo Province (S.2)",
-  },
-  {
-    id: 10,
-    label: "Liquefaction Negros Trench (S.6)",
-    src: "/liquefactionScenario6NegrosTrench.tif",
-    desc: "Liquefaction risk zones across Iloilo Province (S.6)",
-  },
-];
+interface Issuance {
+  id: string;
+  title: string;
+  type: string;
+  number: string;
+  date_issued: string | null;
+  file_url: string;
+  description: string;
+}
 
-const issuances = [
-  {
-    label: "NDRRMC Memorandum No. 14, s.2025",
-    href: "./superTyphoonTtex.pdf",
-    date: "2025",
-  },
-  { label: "NDRRMC Memorandum No. 10, s.2025", href: "#", date: "2025" },
-  { label: "NDRRMC Memorandum No. 30, s.2025", href: "#", date: "2025" },
-  { label: "NDRRMC Memorandum No. 31, s.2025", href: "#", date: "2025" },
-  { label: "NDRRMC Memorandum No. 383, s.2024", href: "#", date: "2024" },
-  { label: "NDRRMC Memorandum No. 310, s.2024", href: "#", date: "2024" },
-  { label: "NDRRMC Memorandum No. 221, s.2024", href: "#", date: "2024" },
-];
+interface DownloadableResource {
+  id: string;
+  title: string;
+  category: string;
+  file_url: string;
+  file_type: string;
+  description: string;
+}
 
-type GKYear = "2024" | "2023" | "2022";
-type GKCategory = "Special Awards";
+interface OfficeAward {
+  id: string;
+  year: number;
+  category: string;
+  name: string;
+  region: string;
+  class_rating: string;
+  scan_url: string | null;
+}
 
-const gawadKalasagData: Record<
-  GKYear,
-  Record<GKCategory, { name: string; region: string; classRating: string }[]>
-> = {
-  "2024": {
-    "Special Awards": [
-      {
-        name: "Gawad Kalasag 2023 - DRRM",
-        region: "National",
-        classRating: "Bronze Awardee",
-      },
-      {
-        name: "Resculympics 2024 - DRRM Olympics",
-        region: "Regional",
-        classRating: "Champion",
-      },
-    ],
-    
-    
-  },
-  "2023": {
-    "Special Awards": [
-      { name: "Iloilo Rescue Team Alpha", region: "VI", classRating: "SA-GK" },
-    ],
-    
-  },
-  "2022": {
-    "Special Awards": [
-      {
-        name: "Provincial EROI Team",
-        region: "Local",
-        classRating: "Recognition",
-      },
-    ],
-    
-  },
-};
+interface ContentResponse<T> {
+  success: boolean;
+  data?: T[];
+  error?: string;
+}
 
-const gkYears: GKYear[] = ["2024", "2023", "2022"];
-const gkCategories: GKCategory[] = [
-  "Special Awards",
-];
+async function fetchContent<T>(url: string, signal: AbortSignal): Promise<T[]> {
+  const response = await fetch(url, { signal, cache: "no-store" });
+  const result = (await response.json()) as ContentResponse<T>;
 
-const categoryColor: Record<GKCategory, string> = {
-  "Special Awards": "bg-[#002E5D]",
-};
+  if (!response.ok || !result.success || !result.data) {
+    throw new Error(result.error || `Failed to load ${url}`);
+  }
+
+  return result.data;
+}
 
 const ratingBadge: Record<string, string> = {
   Gold: "bg-amber-100 text-amber-800 border border-amber-300",
@@ -161,14 +83,93 @@ const ratingBadge: Record<string, string> = {
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
+function getGoogleDrivePreviewUrl(source: string) {
+  try {
+    const url = new URL(source);
+    if (url.hostname !== "drive.google.com") return null;
+
+    const fileId =
+      url.pathname.match(/^\/file\/d\/([^/]+)/)?.[1] ??
+      url.searchParams.get("id");
+    if (!fileId) return null;
+
+    return `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`;
+  } catch {
+    return null;
+  }
+}
+
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function ResourcesPage() {
   // ─── GENERAL STATE ──────────────────────────────────────────────────────────
-  const [activeYear, setActiveYear] = useState<GKYear>("2024");
-  const [activeCategory, setActiveCategory] =
-    useState<GKCategory>("Special Awards");
+  const [hazardMaps, setHazardMaps] = useState<HazardMap[]>([]);
+  const [issuances, setIssuances] = useState<Issuance[]>([]);
+  const [downloadableResources, setDownloadableResources] = useState<DownloadableResource[]>([]);
+  const [awards, setAwards] = useState<OfficeAward[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [activeYear, setActiveYear] = useState("");
+  const [activeCategory, setActiveCategory] = useState("");
   const [issuanceFilter, setIssuanceFilter] = useState<string>("All");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadResources() {
+      const results = await Promise.allSettled([
+        fetchContent<HazardMap>("/api/content/hazard-maps", controller.signal),
+        fetchContent<Issuance>("/api/content/issuances", controller.signal),
+        fetchContent<DownloadableResource>("/api/content/downloadable-resources", controller.signal),
+        fetchContent<OfficeAward>("/api/content/awards", controller.signal),
+      ]);
+
+      if (controller.signal.aborted) return;
+
+      const [mapsResult, issuancesResult, resourcesResult, awardsResult] = results;
+      const failures: string[] = [];
+
+      if (mapsResult.status === "fulfilled") {
+        setHazardMaps(mapsResult.value);
+      } else {
+        failures.push(
+          `hazard maps: ${mapsResult.reason instanceof Error ? mapsResult.reason.message : String(mapsResult.reason)}`,
+        );
+      }
+
+      if (issuancesResult.status === "fulfilled") {
+        setIssuances(issuancesResult.value);
+      } else {
+        failures.push(
+          `issuances: ${issuancesResult.reason instanceof Error ? issuancesResult.reason.message : String(issuancesResult.reason)}`,
+        );
+      }
+
+      if (resourcesResult.status === "fulfilled") {
+        setDownloadableResources(resourcesResult.value);
+      } else {
+        failures.push(
+          `downloadable resources: ${resourcesResult.reason instanceof Error ? resourcesResult.reason.message : String(resourcesResult.reason)}`,
+        );
+      }
+
+      if (awardsResult.status === "fulfilled") {
+        setAwards(awardsResult.value);
+      } else {
+        failures.push(
+          `awards: ${awardsResult.reason instanceof Error ? awardsResult.reason.message : String(awardsResult.reason)}`,
+        );
+      }
+
+      setLoadError(
+        failures.length ? `Some sections could not be loaded: ${failures.join("; ")}` : null,
+      );
+      setLoading(false);
+    }
+
+    loadResources();
+    return () => controller.abort();
+  }, []);
 
   // ─── LIGHTBOX STATE ─────────────────────────────────────────────────────────
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -180,6 +181,9 @@ export default function ResourcesPage() {
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const positionRef = useRef({ x: 0, y: 0 });
   const imageWrapperRef = useRef<HTMLDivElement>(null);
+  const lightboxDrivePreviewUrl = lightboxSrc
+    ? getGoogleDrivePreviewUrl(lightboxSrc)
+    : null;
 
   // ─── LIGHTBOX HANDLERS ──────────────────────────────────────────────────────
 
@@ -249,12 +253,41 @@ export default function ResourcesPage() {
 
   // ─── DERIVED ────────────────────────────────────────────────────────────────
 
+  const issuanceYears = Array.from(
+    new Set(
+      issuances
+        .map((item) => item.date_issued?.slice(0, 4))
+        .filter((year): year is string => Boolean(year)),
+    ),
+  ).sort((a, b) => Number(b) - Number(a));
   const filteredIssuances =
     issuanceFilter === "All"
       ? issuances
-      : issuances.filter((i) => i.date === issuanceFilter);
+      : issuances.filter(
+          (item) => item.date_issued?.slice(0, 4) === issuanceFilter,
+        );
 
-  const tableRows = gawadKalasagData[activeYear][activeCategory] ?? [];
+  const awardYears = Array.from(new Set(awards.map((award) => award.year)))
+    .sort((a, b) => b - a)
+    .map(String);
+  const selectedYear = awardYears.includes(activeYear)
+    ? activeYear
+    : awardYears[0] ?? "";
+  const awardCategories = Array.from(
+    new Set(
+      awards
+        .filter((award) => String(award.year) === selectedYear)
+        .map((award) => award.category),
+    ),
+  ).sort();
+  const selectedCategory = awardCategories.includes(activeCategory)
+    ? activeCategory
+    : awardCategories[0] ?? "";
+  const tableRows = awards.filter(
+    (award) =>
+      String(award.year) === selectedYear &&
+      award.category === selectedCategory,
+  );
 
   // ─── RENDER ─────────────────────────────────────────────────────────────────
 
@@ -270,8 +303,8 @@ export default function ResourcesPage() {
             Resources
           </h1>
           <p className="text-blue-200 text-sm max-w-xl">
-            Access hazard maps, official issuances, and Gawad Kalasag
-            recognition records for Iloilo Province.
+            Access hazard maps, official issuances, downloadable documents, and
+            awards and recognition records received by the office.
           </p>
           {/* Quick jump links */}
           <div className="flex flex-wrap gap-3 mt-5">
@@ -287,9 +320,14 @@ export default function ResourcesPage() {
                 label: "Issuances",
               },
               {
-                href: "#gawad",
+                href: "#downloads",
+                icon: <Download className="w-3.5 h-3.5" />,
+                label: "Downloadable Resources",
+              },
+              {
+                href: "#awards",
                 icon: <Award className="w-3.5 h-3.5" />,
-                label: "Gawad Kalasag",
+                label: "Awards & Recognition",
               },
             ].map((item) => (
               <a
@@ -305,6 +343,15 @@ export default function ResourcesPage() {
       </div>
 
       <main className="max-w-5xl mx-auto px-4 py-12 space-y-16">
+        {loadError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          >
+            {loadError}
+          </div>
+        )}
+
         {/* ══ HAZARD MAPS ══ */}
         <section id="hazard-maps">
           <div className="flex items-center gap-3 mb-6">
@@ -315,35 +362,70 @@ export default function ResourcesPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
-            {hazardMaps.map((map) => (
-              <div
-                key={map.id}
-                onClick={() => openLightbox(map.src, map.label)}
-                className="group cursor-zoom-in bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
-              >
-                <div className="relative h-44 bg-gray-100 overflow-hidden">
-                  <Image
-                    src={map.src}
-                    alt={map.label}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    draggable={false}
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-[#002E5D]/0 group-hover:bg-[#002E5D]/40 transition-colors duration-200 flex items-center justify-center">
-                    <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          {loading ? (
+            <p className="py-8 text-center text-sm text-gray-500">Loading hazard maps...</p>
+          ) : hazardMaps.length === 0 ? (
+            <p className="py-8 text-center text-sm text-gray-500">No hazard maps available.</p>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-5">
+              {hazardMaps.map((map) => {
+                const imageSource = map.thumbnail || map.file_url || "";
+                const drivePreviewUrl = getGoogleDrivePreviewUrl(imageSource);
+
+                return (
+                  <div
+                    key={map.id}
+                    onClick={
+                      map.file_url
+                        ? () => openLightbox(map.file_url!, map.title)
+                        : undefined
+                    }
+                    className={`group bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 ${
+                      map.file_url ? "cursor-zoom-in" : "cursor-default"
+                    }`}
+                  >
+                    <div className="relative h-44 bg-gray-100 overflow-hidden">
+                      {drivePreviewUrl ? (
+                        <iframe
+                          src={drivePreviewUrl}
+                          title={`Preview of ${map.title}`}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full border-0 pointer-events-none"
+                        />
+                      ) : imageSource ? (
+                        <Image
+                          src={imageSource}
+                          alt={map.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          draggable={false}
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                          <Map className="h-10 w-10" />
+                        </div>
+                      )}
+                      {map.file_url && (
+                        <div className="absolute inset-0 bg-[#002E5D]/0 group-hover:bg-[#002E5D]/40 transition-colors duration-200 flex items-center justify-center">
+                          <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <p className="font-bold text-sm text-[#002E5D]">
+                        {map.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {map.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="p-4">
-                  <p className="font-bold text-sm text-[#002E5D]">
-                    {map.label}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">{map.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ══ ISSUANCES ══ */}
@@ -358,7 +440,7 @@ export default function ResourcesPage() {
 
           {/* Year filter */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {["All", "2025", "2024"].map((yr) => (
+            {["All", ...issuanceYears].map((yr) => (
               <button
                 key={yr}
                 onClick={() => setIssuanceFilter(yr)}
@@ -374,31 +456,100 @@ export default function ResourcesPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden divide-y divide-gray-100">
-            {filteredIssuances.map((item, i) => (
-              <a
-                key={i}
-                href={item.href}
-                className="flex items-center justify-between px-5 py-3.5 hover:bg-blue-50 transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className="w-4 h-4 text-[#002E5D] shrink-0" />
-                  <span className="text-sm text-[#002E5D] font-medium group-hover:underline">
-                    {item.label}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase">
-                    {item.date}
-                  </span>
-                  <Download className="w-4 h-4 text-gray-400 group-hover:text-[#002E5D] transition" />
-                </div>
-              </a>
-            ))}
+            {loading ? (
+              <p className="px-5 py-8 text-center text-sm text-gray-500">Loading issuances...</p>
+            ) : filteredIssuances.length === 0 ? (
+              <p className="px-5 py-8 text-center text-sm text-gray-500">No issuances available.</p>
+            ) : (
+              filteredIssuances.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.file_url || undefined}
+                  target={item.file_url ? "_blank" : undefined}
+                  rel={item.file_url ? "noopener noreferrer" : undefined}
+                  className="flex items-center justify-between px-5 py-3.5 hover:bg-blue-50 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-4 h-4 text-[#002E5D] shrink-0" />
+                    <span className="text-sm text-[#002E5D] font-medium group-hover:underline">
+                      {item.title}
+                      {item.number ? ` — ${item.number}` : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">
+                      {item.date_issued?.slice(0, 4) || "—"}
+                    </span>
+                    {item.file_url && (
+                      <Download className="w-4 h-4 text-gray-400 group-hover:text-[#002E5D] transition" />
+                    )}
+                  </div>
+                </a>
+              ))
+            )}
           </div>
         </section>
 
-        {/* ══ GAWAD KALASAG ══ */}
-        <section id="gawad">
+        {/* ══ DOWNLOADABLE RESOURCES ══ */}
+        <section id="downloads">
+          <div className="flex items-center gap-3 mb-6">
+            <Download className="w-5 h-5 text-[#F58220]" />
+            <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
+              Downloadable Resources
+            </h2>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden divide-y divide-gray-100">
+            {loading ? (
+              <p className="px-5 py-8 text-center text-sm text-gray-500">
+                Loading downloadable resources...
+              </p>
+            ) : downloadableResources.length === 0 ? (
+              <p className="px-5 py-8 text-center text-sm text-gray-500">
+                No downloadable resources available.
+              </p>
+            ) : (
+              downloadableResources.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.file_url || undefined}
+                  target={item.file_url ? "_blank" : undefined}
+                  rel={item.file_url ? "noopener noreferrer" : undefined}
+                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-blue-50 transition group"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <FileText className="w-5 h-5 text-[#002E5D] shrink-0" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[#002E5D] group-hover:underline">
+                        {item.title}
+                      </p>
+                      {item.description && (
+                        <p className="mt-1 truncate text-xs text-gray-500">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase text-blue-800">
+                      {item.category}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase text-gray-400">
+                      {item.file_type}
+                    </span>
+                    {item.file_url && (
+                      <Download className="w-4 h-4 text-gray-400 group-hover:text-[#002E5D] transition" />
+                    )}
+                  </div>
+                </a>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* ══ AWARDS AND RECOGNITIONS ══ */}
+        <section id="awards">
           <div className="flex items-center gap-3 mb-6">
             <Award className="w-5 h-5 text-[#F58220]" />
             <h2 className="text-xl font-black text-[#002E5D] uppercase tracking-wide">
@@ -407,14 +558,29 @@ export default function ResourcesPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Year tabs */}
-          <div className="flex gap-2 mb-5">
-            {gkYears.map((yr) => (
+          {/* Year and category filters */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {awardCategories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-4 py-2 rounded-md text-sm font-bold border transition ${
+                  selectedCategory === category
+                    ? "bg-[#002E5D] text-white border-[#002E5D]"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-5">
+            {awardYears.map((yr) => (
               <button
                 key={yr}
                 onClick={() => setActiveYear(yr)}
                 className={`px-5 py-2 rounded-md text-sm font-bold border-2 transition ${
-                  activeYear === yr
+                  selectedYear === yr
                     ? "bg-[#F58220] text-white border-[#F58220]"
                     : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
                 }`}
@@ -426,15 +592,18 @@ export default function ResourcesPage() {
 
           {/* Table */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div
-              className={`${categoryColor[activeCategory]} text-white px-5 py-3`}
-            >
+            <div className="bg-[#002E5D] text-white px-5 py-3">
               <p className="text-xs font-bold uppercase tracking-widest opacity-80">
-                {activeYear} Gawad Kalasag — {activeCategory}
+                {selectedYear || "Awards and Recognitions"}{" "}
+                {selectedCategory && `— ${selectedCategory}`}
               </p>
             </div>
 
-            {tableRows.length === 0 ? (
+            {loading ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                Loading awards...
+              </div>
+            ) : tableRows.length === 0 ? (
               <div className="py-10 text-center text-sm text-gray-400">
                 No records for this category and year.
               </div>
@@ -443,31 +612,65 @@ export default function ResourcesPage() {
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="text-left px-5 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
-                      Name
+                      Award / Recognition
                     </th>
                     <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
                       Region
                     </th>
                     <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
-                      Class / Rating
+                      Distinction / Rating
+                    </th>
+                    <th className="text-center px-4 py-3 text-xs font-black uppercase text-gray-500 tracking-wide">
+                      Scan
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {tableRows.map((row, i) => (
-                    <tr key={i} className="hover:bg-blue-50 transition">
+                  {tableRows.map((row) => (
+                    <tr key={row.id} className="hover:bg-blue-50 transition">
                       <td className="px-5 py-3.5 font-medium text-[#002E5D]">
                         {row.name}
                       </td>
                       <td className="px-4 py-3.5 text-center text-gray-600">
-                        {row.region}
+                        {row.region || "—"}
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${ratingBadge[row.classRating] ?? "bg-gray-100 text-gray-600"}`}
-                        >
-                          {row.classRating}
-                        </span>
+                        {row.class_rating ? (
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${ratingBadge[row.class_rating] ?? "bg-gray-100 text-gray-600"}`}
+                          >
+                            {row.class_rating}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        {row.scan_url ? (
+                          /\.(?:jpe?g|png|gif|webp)(?:[?#]|$)/i.test(row.scan_url) ? (
+                            <button
+                              type="button"
+                              onClick={() => openLightbox(row.scan_url!, row.name)}
+                              aria-label={`View scanned image for ${row.name}`}
+                              className="inline-flex items-center gap-1 text-[#002E5D] hover:underline"
+                            >
+                              <Eye className="h-4 w-4" />
+                              View image
+                            </button>
+                          ) : (
+                            <a
+                              href={row.scan_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[#002E5D] hover:underline"
+                            >
+                              <FileText className="h-4 w-4" />
+                              View PDF
+                            </a>
+                          )
+                        ) : (
+                          "—"
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -479,7 +682,51 @@ export default function ResourcesPage() {
       </main>
 
       {/* ── LIGHTBOX ── */}
-      {lightboxSrc && (
+      {lightboxSrc && lightboxDrivePreviewUrl && (
+        <div
+          className="fixed inset-0 z-100 bg-black/85 flex items-center justify-center p-4"
+          onClick={closeLightbox}
+        >
+          <div
+            className="w-full max-w-5xl rounded-xl bg-gray-900 p-3 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <p className="truncate text-sm font-bold text-white">
+                {lightboxLabel}
+              </p>
+              <div className="flex shrink-0 items-center gap-3">
+                <a
+                  href={lightboxSrc}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-blue-200 hover:text-white"
+                >
+                  Open in Google Drive
+                </a>
+                <button
+                  type="button"
+                  onClick={closeLightbox}
+                  aria-label="Close preview"
+                  className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+            <iframe
+              src={lightboxDrivePreviewUrl}
+              title={`Preview of ${lightboxLabel}`}
+              allow="autoplay"
+              allowFullScreen
+              referrerPolicy="no-referrer"
+              className="h-[min(80vh,700px)] w-full rounded-lg border-0 bg-white"
+            />
+          </div>
+        </div>
+      )}
+
+      {lightboxSrc && !lightboxDrivePreviewUrl && (
         <div
           className="fixed inset-0 z-100 bg-black/85 flex items-center justify-center p-6"
           onClick={closeLightbox}

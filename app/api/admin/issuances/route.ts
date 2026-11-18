@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   if (!client) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { title, type, number, date_issued, file_url, description, is_active } = body;
+  const { title, type, number, date_issued, File, description, is_active } = body;
   if (!title) return NextResponse.json({ success: false, error: 'Title required' }, { status: 400 });
 
   const { data, error } = await client.from('issuances').insert([{
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     type: type || 'memorandum',
     number: number || '',
     date_issued: date_issued || null,
-    file_url: file_url || '',
+    File: File || '',
     description: description || '',
     is_active: is_active ?? true,
   }]).select().single();

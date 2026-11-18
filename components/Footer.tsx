@@ -105,7 +105,7 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-400 font-bold uppercase">
         <p>© 2026 PDRRMO Iloilo. All Rights Reserved.</p>
-        <p>Developed by: PDRRMO Research and Planning Intern Batch 2025 & 2026</p>
+        <p>Developed by: PDRRMO Research and Planning WVSU Intern Batch 2025 & 2026</p>
       </div>
     </footer>
   );

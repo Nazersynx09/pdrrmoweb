@@ -80,7 +80,7 @@ export default function ResourcesPage() {
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this resource?')) {
       try {
-        await supabaseAdmin.from('resources').delete().eq('id', id);
+        await remove(id);
         refetch();
       } catch (err) {
         console.error('Error deleting resource:', err);
@@ -91,7 +91,8 @@ export default function ResourcesPage() {
   const toggleActive = async (id: string) => {
     const item = resources.find(r => r.id === id);
     if (!item) return;
-    try {      await supabaseAdmin.from('resources').update({ is_active: !item.is_active }).eq('id', id);
+    try {
+      await update(id, { is_active: !item.is_active });
       refetch();
     }
     catch (err) {

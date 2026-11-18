@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, GripVertical, Image as ImageIcon } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
+import { supabase } from '@/lib/supabaseClient';
 
 interface CarouselSlide {
   id: string;
@@ -17,9 +18,18 @@ interface CarouselSlide {
   created_at: string;
 }
 
+async function getAdminHeaders() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  if (!session) throw new Error('Your session has expired. Sign in again.');
+
+  return { Authorization: `Bearer ${session.access_token}` };
+}
+
 export default function CarouselPage() {
   const [slides, setSlides] = useState<CarouselSlide[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<CarouselSlide | null>(null);
 
@@ -36,18 +46,23 @@ export default function CarouselPage() {
 
   const fetchSlides = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const res = await fetch('/api/admin/carousel');
+      const res = await fetch('/api/admin/carousel', {
+        headers: await getAdminHeaders(),
+      });
       const data = await res.json();
-      if (data.success) {
-        setSlides(
-          [...data.data].sort(
-            (a: CarouselSlide, b: CarouselSlide) => a.display_order - b.display_order
-          )
-        );
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to fetch carousel slides');
       }
+      setSlides(
+        [...data.data].sort(
+          (a: CarouselSlide, b: CarouselSlide) => a.display_order - b.display_order
+        )
+      );
     } catch (error) {
       console.error('Failed to fetch carousel slides:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to fetch carousel slides');
     } finally {
       setLoading(false);
     }
@@ -73,26 +88,34 @@ export default function CarouselPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let response: Response;
+      const authorization = await getAdminHeaders();
       if (editingItem) {
-        await fetch('/api/admin/carousel', {
+        response = await fetch('/api/admin/carousel', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...authorization, 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editingItem.id, ...formData }),
         });
       } else {
-        await fetch('/api/admin/carousel', {
+        response = await fetch('/api/admin/carousel', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...authorization, 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
       }
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to save slide');
+      }
+
       await fetchSlides();
       setShowForm(false);
       setEditingItem(null);
       resetForm();
     } catch (error) {
       console.error('Failed to save slide:', error);
-      alert('Failed to save slide');
+      alert(error instanceof Error ? error.message : 'Failed to save slide');
     }
   };
 
@@ -114,23 +137,39 @@ export default function CarouselPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this slide?')) return;
     try {
-      await fetch(`/api/admin/carousel?id=${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/carousel?id=${id}`, {
+        method: 'DELETE',
+        headers: await getAdminHeaders(),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete slide');
+      }
       await fetchSlides();
     } catch (error) {
       console.error('Failed to delete slide:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete slide');
     }
   };
 
   const toggleActive = async (item: CarouselSlide) => {
     try {
-      await fetch('/api/admin/carousel', {
+      const response = await fetch('/api/admin/carousel', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          ...await getAdminHeaders(),
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ id: item.id, is_active: !item.is_active }),
       });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to update slide status');
+      }
       await fetchSlides();
     } catch (error) {
       console.error('Failed to toggle slide:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update slide status');
     }
   };
 
@@ -155,7 +194,9 @@ export default function CarouselPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        {loading ? (
+        {loadError ? (
+          <div role="alert" className="p-8 text-center text-red-700">{loadError}</div>
+        ) : loading ? (
           <div className="p-8 text-center text-gray-500">Loading slides...</div>
         ) : slides.length === 0 ? (
           <div className="p-8 text-center text-gray-500">No slides yet</div>
@@ -285,11 +326,15 @@ export default function CarouselPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Button Link</label>
                   <input
                     type="text"
+                    required
                     value={formData.cta_link}
                     onChange={(e) => setFormData({ ...formData, cta_link: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220]"
-                    placeholder="/resources"
+                    placeholder="https://drive.google.com/... or /resources"
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Use a full HTTPS URL for external links or a site path such as /resources.
+                  </p>
                 </div>
               </div>
 

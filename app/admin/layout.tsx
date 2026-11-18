@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Newspaper, AlertTriangle,
-  Map, FileText, FileUp, LogOut, Menu, X,
+  Map, FileText, FileUp, Award, LogOut, Menu, X,
   GripVertical,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -18,6 +18,7 @@ const menuItems = [
   { href: '/admin/hazard-maps', label: 'Hazard Maps', icon: Map },
   { href: '/admin/resources', label: 'Resources', icon: FileText },
   { href: '/admin/issuances', label: 'Issuances', icon: FileUp },
+  { href: '/admin/awards', label: 'Awards & Recognition', icon: Award },
   { href: '/admin/carousel', label: 'Carousel Slides', icon: GripVertical },
 ];
 

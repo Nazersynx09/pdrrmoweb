@@ -33,7 +33,7 @@ function NewsCard({ item }: { item: NewsItem }) {
 
   return (
     <Link
-      href={`/news/${item.slug}`}
+      href={`/news/${item.id}`}
       className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
     >
       <div className="relative h-48 bg-gray-100">
@@ -180,7 +180,7 @@ export default function NewsPage() {
             </p>
             <div className="flex items-center gap-4">
               <Link
-                href={`/news/${featuredNews.slug}`}
+                href={`/news/${featuredNews.id}`}
                 className="inline-flex items-center gap-2 bg-[#F58220] text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
               >
                 Read More <ChevronRight className="w-4 h-4" />
@@ -206,7 +206,7 @@ export default function NewsPage() {
       )}
 
       {/* Back Link */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* <div className="max-w-7xl mx-auto px-4 py-6">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-[#F58220] transition-colors"
@@ -214,7 +214,7 @@ export default function NewsPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
-      </div>
+      </div> */}
 
       {/* Latest News Cards */}
       {news.length > 0 && (

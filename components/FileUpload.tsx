@@ -5,7 +5,7 @@ import { Upload, X, FileText, Image as ImageIcon, File, Trash2, Eye } from "luci
 import { uploadFile } from '@/lib/uploadFile';
 
 interface FileUploadProps {
-  value: string;
+  value?: string | null;
   onChange: (url: string) => void;
   label?: string;
   accept?: string;
@@ -16,8 +16,9 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isImage = value?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-  const isPdf = value?.toLowerCase().endsWith('.pdf');
+  const fileUrl = value ?? '';
+  const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -75,12 +76,12 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
 
   return (
     <div className="space-y-2">
-      {value ? (
+      {fileUrl ? (
         <div className="relative group">
           {isImage ? (
             <div className="relative h-40 w-full bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
               <img
-                src={value}
+                src={fileUrl}
                 alt="File preview"
                 className="w-full h-full object-contain"
               />
@@ -95,7 +96,7 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
                 <p className="text-xs text-gray-500">Click to preview or download</p>
               </div>
               <a
-                href={value}
+                href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-gray-500 hover:text-[#002E5D] hover:bg-gray-200 rounded-lg"
@@ -164,7 +165,7 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
 
       <input
         type="text"
-        value={value}
+        value={fileUrl}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Or paste file URL..."
         className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-gray-900 placeholder:text-gray-400 text-sm"

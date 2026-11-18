@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Search, Map, Image } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Pencil, Trash2, Search, Map, Image as ImageIcon } from 'lucide-react';
 import { useAdminApi } from "@/lib/hooks/useAdminApi";
-import ImageUpload from '@/components/ImageUpload';
+import { uploadFile } from "@/lib/uploadFile";
 
 interface HazardMap {
   id: string;
@@ -12,8 +12,8 @@ interface HazardMap {
   file_url: string;
   description: string;
   created_at: string;
+  is_active: boolean;
 }
-
 
 export default function HazardMapsPage() {
   const { data: maps, loading, error, refetch, create, update, remove } = useAdminApi<HazardMap>('/api/admin/hazard-maps');
@@ -22,15 +22,15 @@ export default function HazardMapsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [formLoading, setFormLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
     type: 'flood' as 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami',
+    file_url: '',
     description: '',
   });
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const filteredMaps = maps.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -38,34 +38,39 @@ export default function HazardMapsPage() {
     return matchesSearch && matchesType;
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  if (!file) {
-    setSelectedFile(null);
-    return;
-  }
+    const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!acceptedTypes.includes(file.type)) {
+      setFormError('Upload a JPG, PNG, GIF, or WebP image.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError('Map images must be 5 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
 
-  // PNG validation
-  if (file.type !== 'image/png') {
-    setFormError('Please upload a PNG file only.');
-    e.target.value = '';
-    setSelectedFile(null);
-    return;
-  }
-
-  // Maximum 10 MB
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
-
-  if (file.size > MAX_FILE_SIZE) {
-    setFormError('The PNG file must not exceed 10 MB.');
-    e.target.value = '';
-    setSelectedFile(null);
-    return;
-  }
-
-  setFormError(null);
-  setSelectedFile(file);
+    setUploadingImage(true);
+    setFormError(null);
+    try {
+      const url = await uploadFile(file, 'news-images');
+      if (!url) {
+        setFormError('Image upload failed. Please try again.');
+        return;
+      }
+      setFormData((current) => ({ ...current, file_url: url }));
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : 'Image upload failed. Please try again.',
+      );
+    } finally {
+      setUploadingImage(false);
+      event.target.value = '';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,9 +79,15 @@ export default function HazardMapsPage() {
     setFormError(null);
     
     try {
+      if (!formData.file_url.trim()) {
+        setFormError('A map image URL or public path is required.');
+        return;
+      }
+
+      const payload = { ...formData, file_url: formData.file_url.trim() };
       const result = editingItem
-        ? await update(editingItem.id, formData)
-        : await create(formData);
+        ? await update(editingItem.id, payload)
+        : await create(payload);
       
       if (result.success) {
         setShowForm(false);
@@ -97,6 +108,7 @@ export default function HazardMapsPage() {
     setFormData({
       title: item.title,
       type: item.type,
+      file_url: item.file_url,
       description: item.description,
     });
     setShowForm(true);
@@ -104,11 +116,31 @@ export default function HazardMapsPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this hazard map?')) {
-      await remove(id);
-      refetch();
+      try {
+        const result = await remove(id);
+        if (!result.success) {
+          setFormError(result.error || 'Failed to delete hazard map.');
+        }
+      } catch (error) {
+        setFormError(
+          error instanceof Error ? error.message : 'Failed to delete hazard map.',
+        );
+      }
     }
   };
 
+  const toggleActive = async (item: HazardMap) => {
+    try {
+      const result = await update(item.id, { is_active: !item.is_active });
+      if (!result.success) {
+        setFormError(result.error || 'Failed to update hazard map status.');
+      }
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : 'Failed to update hazard map status.',
+      );
+    }
+  };
 
   const getTypeBadge = (type: string) => {
     const styles = {
@@ -143,6 +175,13 @@ export default function HazardMapsPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
+            setFormData({
+              title: '',
+              type: 'flood',
+              file_url: '',
+              description: '',
+            });
+            setFormError(null);
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -150,6 +189,17 @@ export default function HazardMapsPage() {
           Add Hazard Map
         </button>
       </div>
+
+      {error && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {error}
+        </div>
+      )}
+      {formError && !showForm && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {formError}
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4">
@@ -186,13 +236,20 @@ export default function HazardMapsPage() {
               <tr>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Title</th>
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Type</th>
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">Status</th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredMaps.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                    Loading hazard maps...
+                  </td>
+                </tr>
+              ) : filteredMaps.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                     No hazard maps found
                   </td>
                 </tr>
@@ -202,7 +259,7 @@ export default function HazardMapsPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Image className="w-6 h-6 text-gray-400" />
+                          <ImageIcon className="w-6 h-6 text-gray-400" />
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{item.title}</p>
@@ -212,6 +269,19 @@ export default function HazardMapsPage() {
                     </td>
                     <td className="px-4 py-4">
                       {getTypeBadge(item.type)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <button
+                        type="button"
+                        onClick={() => toggleActive(item)}
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          item.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {item.is_active ? 'Active' : 'Inactive'}
+                      </button>
                     </td>
                     
                     <td className="px-4 py-4">
@@ -252,6 +322,7 @@ export default function HazardMapsPage() {
                   setShowForm(false);
                   setEditingItem(null);
                 }}
+                disabled={formLoading || uploadingImage}
                 className="p-1 hover:bg-gray-100 rounded-lg text-2xl"
               >
                 ×
@@ -299,33 +370,45 @@ export default function HazardMapsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hazard Map PNG
+                  Map image
                 </label>
-
                 <input
                   type="file"
-                  accept="image/png,.png"
-                  required={!editingItem}
-                  onChange={handleFileChange}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg 
-                    focus:outline-none focus:ring-2 focus:ring-[#F58220] 
-                    text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg 
-                    file:border-0 file:text-sm file:font-medium 
-                    file:bg-[#002E5D] file:text-white hover:file:bg-[#001f45]"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  disabled={uploadingImage || formLoading}
+                  onChange={handleImageUpload}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:font-medium file:text-[#002E5D] hover:file:bg-blue-100 disabled:opacity-50"
                 />
-
                 <p className="mt-1 text-xs text-gray-500">
-                  PNG format only. Maximum file size: 10 MB.
+                  {uploadingImage
+                    ? 'Uploading image...'
+                    : 'Upload a JPG, PNG, GIF, or WebP image up to 5 MB, or enter a public image URL/path below.'}
                 </p>
-
-                {selectedFile && (
-                  <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
-                    <p className="font-medium">{selectedFile.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
+                {formData.file_url && (
+                  <a
+                    href={formData.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-sm text-blue-700 hover:underline"
+                  >
+                    View current map image
+                  </a>
                 )}
+                <label
+                  htmlFor="hazard-map-image-url"
+                  className="mt-3 block text-sm font-medium text-gray-700"
+                >
+                  Or enter an image URL or public path
+                </label>
+                <input
+                  id="hazard-map-image-url"
+                  type="text"
+                  required
+                  value={formData.file_url}
+                  onChange={(e) => setFormData({ ...formData, file_url: e.target.value })}
+                  placeholder="https://... or /hazard-map.png"
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-[#F58220]"
+                />
               </div>
 
 
@@ -343,13 +426,13 @@ export default function HazardMapsPage() {
                     setFormError(null);
                   }}
                   className="px-4 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  disabled={formLoading}
+                  disabled={formLoading || uploadingImage}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={formLoading}
+                  disabled={formLoading || uploadingImage}
                   className="px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {formLoading ? (editingItem ? 'Updating...' : 'Creating...') : (editingItem ? 'Update' : 'Create')}

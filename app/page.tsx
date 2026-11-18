@@ -10,50 +10,40 @@ import UpdatesSection from "@/components/UpdatesSection";
 import QuickLinks from "@/components/QuickLinks";
 import Footer from "@/components/Footer";
 
+interface Issuance {
+  id: string;
+  title: string;
+  number: string;
+  date_issued: string | null;
+  file_url: string;
+}
 
-// const alerts = [
-//   {
-//     level: "info",
-//     message: "Stay informed with the latest weather updates from PAGASA",
-//     color: "bg-blue-600",
-//   },
-//   {
-//     level: "warning",
-//     message:
-//       "Southwest monsoon season continues. Please prepare emergency kits and know your evacuation routes.",
-//     color: "bg-amber-500",
-//   },
-//   {
-//     level: "watch",
-//     message:
-//       "Flooding occurs in low-lying areas. Avoid crossing flooded roads.",
-//     color: "bg-orange-500",
-//   },
-  
-// ];
+interface IssuancesResponse {
+  success: boolean;
+  data?: Issuance[];
+  error?: string;
+}
 
-const issuances = [
-  {
-    text: "NDRRMC Memorandum No. 58, s. 2026",
-    href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC-MEMO-58-s.-2026-Raising-of-the-NDRRMOC-Alert-Status-to-BLUE-ICOW-The-Observance-of-the-Holy-Week-SEMANA-SANTA-2026.pdf",
-    date: "Mar 2026",
-  },
-  {
-    text: "NDRRMC Memorandum No. 62, s. 2026",
-    href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/03/NDRRMC_Memorandum_No_62_s_2026.pdf",
-    date: "Mar 2026",
-  },
-  {
-    text: "PDRRMC Memorandum No. 15, s. 2026",
-    href: "https://ndrrmc.gov.ph/wp-content/uploads/2026/02/NDRRMC_Memorandum_No_15_s_2026.pdf",
-    date: "Feb 2026",
-  },
-  {
-    text: "NDRRMC Memorandum No. 14, s. 2025",
-    href: "./superTyphoonTtex.pdf",
-    date: "2025",
-  },
-];
+interface DisplayIssuance {
+  id: string;
+  text: string;
+  href: string;
+  date: string;
+}
+
+interface NewsItem {
+  id: string;
+  title: string;
+  featured_image: string;
+  excerpt: string;
+  published_at: string;
+}
+
+interface NewsResponse {
+  success: boolean;
+  data?: NewsItem[];
+  error?: string;
+}
 
 const contactInfo = {
   phone1: "(033) 328-7920",
@@ -64,6 +54,86 @@ const contactInfo = {
 };
 
 export default function Home() {
+  const [issuances, setIssuances] = useState<DisplayIssuance[]>([]);
+  const [issuancesLoading, setIssuancesLoading] = useState(true);
+  const [issuancesError, setIssuancesError] = useState<string | null>(null);
+  const [latestNews, setLatestNews] = useState<NewsItem | null>(null);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchIssuances() {
+      try {
+        const response = await fetch("/api/content/issuances", {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const result = (await response.json()) as IssuancesResponse;
+        if (!response.ok || !result.success || !result.data) {
+          throw new Error(result.error || "Failed to load issuances.");
+        }
+
+        setIssuances(
+          result.data.map((issuance) => ({
+            id: issuance.id,
+            text: issuance.number
+              ? `${issuance.title} — ${issuance.number}`
+              : issuance.title,
+            href: issuance.file_url,
+            date: issuance.date_issued
+              ? new Date(issuance.date_issued).toLocaleDateString("en-PH", {
+                  month: "short",
+                  year: "numeric",
+                  timeZone: "Asia/Manila",
+                })
+              : "Date not set",
+          })),
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        setIssuancesError(
+          error instanceof Error ? error.message : "Failed to load issuances.",
+        );
+      } finally {
+        if (!controller.signal.aborted) setIssuancesLoading(false);
+      }
+    }
+
+    fetchIssuances();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchLatestNews() {
+      try {
+        const response = await fetch("/api/content/news", {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        const result = (await response.json()) as NewsResponse;
+        if (!response.ok || !result.success || !result.data) {
+          throw new Error(result.error || "Failed to load latest news.");
+        }
+
+        setLatestNews(result.data[0] ?? null);
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        setNewsError(
+          error instanceof Error ? error.message : "Failed to load latest news.",
+        );
+      } finally {
+        if (!controller.signal.aborted) setNewsLoading(false);
+      }
+    }
+
+    fetchLatestNews();
+    return () => controller.abort();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900">
       <AlertBanner />
@@ -77,7 +147,14 @@ export default function Home() {
       <StatsSection />
       <QuickActions />
       <Carousel />
-      <UpdatesSection issuances={issuances} />
+      <UpdatesSection
+        issuances={issuances}
+        issuancesLoading={issuancesLoading}
+        issuancesError={issuancesError}
+        latestNews={latestNews}
+        newsLoading={newsLoading}
+        newsError={newsError}
+      />
       <QuickLinks />
       <Footer />
     </div>

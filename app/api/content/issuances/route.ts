@@ -6,30 +6,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const slug = searchParams.get('slug'); 
-
-  if (slug) {
-    const { data, error } = await supabase
-      .from('issuances')
-      .select('id, title, slug, excerpt, published_at')
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single();
-
-    if (error || !data) {
-      return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data });
-  }
-
+export async function GET() {
   const { data, error } = await supabase
     .from('issuances')
-    .select('id, title, slug, excerpt, published_at')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false });
+    .select('id, title, type, number, date_issued, file_url:File, description, is_active, created_at')
+    .eq('is_active', true)
+    .order('date_issued', { ascending: false });
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, data });
@@ -65,7 +47,15 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: 'ID required' }, { status: 400 });
   }
 
-  const updates: any = {};
+  const updates: {
+    title?: string;
+    slug?: string;
+    content?: string;
+    featured_image?: string;
+    excerpt?: string;
+    status?: string;
+    published_at?: string;
+  } = {};
   if (title) {
     updates.title = title;
     updates.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').substring(0, 50);

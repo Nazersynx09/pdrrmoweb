@@ -11,7 +11,7 @@ interface Issuance {
   type: 'executive_order' | 'memorandum' | 'resolution' | 'ordinance' | 'bulletin';
   number: string;
   date_issued: string;
-  file_url: string;
+  File: string | null;
   description: string;
   is_active: boolean;
   created_at: string;
@@ -33,7 +33,7 @@ export default function IssuancesPage() {
     type: 'executive_order' as 'executive_order' | 'memorandum' | 'resolution' | 'ordinance' | 'bulletin',
     number: '',
     date_issued: '',
-    file_url: '',
+    File: '',
     description: '',
     is_active: true,
   });
@@ -75,7 +75,7 @@ export default function IssuancesPage() {
       type: item.type,
       number: item.number,
       date_issued: item.date_issued.split('T')[0],
-      file_url: item.file_url,
+      File: item.File ?? '',
       description: item.description,
       is_active: item.is_active,
     });
@@ -128,7 +128,7 @@ export default function IssuancesPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ title: '', type: 'executive_order', number: '', date_issued: '', file_url: '', description: '', is_active: true });
+            setFormData({ title: '', type: 'executive_order', number: '', date_issued: '', File: '', description: '', is_active: true });
           }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#002E5D] text-white rounded-lg hover:bg-[#001f45] transition-colors"
         >
@@ -218,7 +218,7 @@ export default function IssuancesPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <a
-                          href={item.file_url}
+                          href={item.File ?? ''}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -335,8 +335,8 @@ export default function IssuancesPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">File (PDF or Image)</label>
                 <FileUpload
-                  value={formData.file_url}
-                  onChange={(url) => setFormData({ ...formData, file_url: url })}
+                  value={formData.File}
+                  onChange={(url) => setFormData({ ...formData, File: url })}
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
               </div>
