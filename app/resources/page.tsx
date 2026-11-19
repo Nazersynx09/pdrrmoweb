@@ -83,20 +83,66 @@ const ratingBadge: Record<string, string> = {
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
-function getGoogleDrivePreviewUrl(source: string) {
+const localMapPreviews: Record<string, string> = {
+  "/Tsunami.tif": "/map-previews/Tsunami.webp",
+  "/eilScenario2WestPanayFault.tif":
+    "/map-previews/eilScenario2WestPanayFault.webp",
+  "/eilScenario6NegrosTrench.tif":
+    "/map-previews/eilScenario6NegrosTrench.webp",
+  "/floodingHazard.tif": "/map-previews/floodingHazard.webp",
+  "/groundshakingScenario2WestPanay.tif":
+    "/map-previews/groundshakingScenario2WestPanay.webp",
+  "/groundshakingScenario6NegrosTrench.tif":
+    "/map-previews/groundshakingScenario6NegrosTrench.webp",
+  "/liquefactionScenario2WestPanay.tif":
+    "/map-previews/liquefactionScenario2WestPanay.webp",
+  "/liquefactionScenario6NegrosTrench.tif":
+    "/map-previews/liquefactionScenario6NegrosTrench.webp",
+  "/rainInducedLandslide.tif": "/map-previews/rainInducedLandslide.webp",
+  "/stormSurgeHazard.tif": "/map-previews/stormSurgeHazard.webp",
+};
+
+const localDriveMapPreviews: Record<string, string> = {
+  "1mumWJXr-NcT5LTeDbbrhjCoDJirKubaQ": "/map-previews/floodingHazard.webp",
+};
+
+function getLocalMapPreview(source: string) {
+  const fileId = getGoogleDriveFileId(source);
+  if (fileId && localDriveMapPreviews[fileId]) {
+    return localDriveMapPreviews[fileId];
+  }
+
+  if (!source.startsWith("/")) return null;
+  const sourcePath = source.split(/[?#]/, 1)[0];
+  return localMapPreviews[sourcePath] || null;
+}
+
+function getGoogleDriveFileId(source: string) {
   try {
     const url = new URL(source);
     if (url.hostname !== "drive.google.com") return null;
 
-    const fileId =
+    return (
       url.pathname.match(/^\/file\/d\/([^/]+)/)?.[1] ??
-      url.searchParams.get("id");
-    if (!fileId) return null;
-
-    return `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`;
+      url.searchParams.get("id")
+    );
   } catch {
     return null;
   }
+}
+
+function getGoogleDrivePreviewUrl(source: string) {
+  const fileId = getGoogleDriveFileId(source);
+  return fileId
+    ? `https://drive.google.com/file/d/${encodeURIComponent(fileId)}/preview`
+    : null;
+}
+
+function getGoogleDriveThumbnailUrl(source: string) {
+  const fileId = getGoogleDriveFileId(source);
+  return fileId
+    ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1200`
+    : null;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -370,7 +416,10 @@ export default function ResourcesPage() {
             <div className="grid md:grid-cols-3 gap-5">
               {hazardMaps.map((map) => {
                 const imageSource = map.thumbnail || map.file_url || "";
-                const drivePreviewUrl = getGoogleDrivePreviewUrl(imageSource);
+                const cardImageSource =
+                  getLocalMapPreview(imageSource) ||
+                  getGoogleDriveThumbnailUrl(imageSource) ||
+                  imageSource;
 
                 return (
                   <div
@@ -385,21 +434,14 @@ export default function ResourcesPage() {
                     }`}
                   >
                     <div className="relative h-44 bg-gray-100 overflow-hidden">
-                      {drivePreviewUrl ? (
-                        <iframe
-                          src={drivePreviewUrl}
-                          title={`Preview of ${map.title}`}
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          className="h-full w-full border-0 pointer-events-none"
-                        />
-                      ) : imageSource ? (
+                      {imageSource ? (
                         <Image
-                          src={imageSource}
+                          src={cardImageSource}
                           alt={map.title}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           draggable={false}
+                          quality={75}
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
@@ -465,6 +507,7 @@ export default function ResourcesPage() {
                 <a
                   key={item.id}
                   href={item.file_url || undefined}
+                  data-analytics-download
                   target={item.file_url ? "_blank" : undefined}
                   rel={item.file_url ? "noopener noreferrer" : undefined}
                   className="flex items-center justify-between px-5 py-3.5 hover:bg-blue-50 transition group"
@@ -514,6 +557,7 @@ export default function ResourcesPage() {
                 <a
                   key={item.id}
                   href={item.file_url || undefined}
+                  data-analytics-download
                   target={item.file_url ? "_blank" : undefined}
                   rel={item.file_url ? "noopener noreferrer" : undefined}
                   className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-blue-50 transition group"

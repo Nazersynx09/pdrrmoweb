@@ -6,7 +6,6 @@ import { AlertTriangle, Loader2 } from "lucide-react";
 interface Advisory {
   id: string;
   title: string;
-  content: string;
   severity: 'info' | 'warning' | 'watch' | 'critical';
   valid_from: string;
   valid_until: string;
@@ -23,25 +22,25 @@ const severityColors: Record<string, string> = {
   critical: "bg-red-600",
 };
 
-export default function AlertBanner({ initialAlerts = [] }: AlertBannerProps) {
-  const [alerts, setAlerts] = useState<Advisory[]>(initialAlerts);
+export default function AlertBanner({ initialAlerts }: AlertBannerProps) {
+  const hasInitialAlerts = initialAlerts !== undefined;
+  const [alerts, setAlerts] = useState<Advisory[]>(initialAlerts ?? []);
   const [activeAlert, setActiveAlert] = useState(0);
-  const [loading, setLoading] = useState(!initialAlerts.length);
+  const [loading, setLoading] = useState(!hasInitialAlerts);
 
   useEffect(() => {
-    // Fetch advisories from API if no initial alerts
-    if (!initialAlerts.length) {
-      fetch('/api/content/advisories')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.data) {
-            setAlerts(data.data);
-          }
-        })
-        .catch(err => console.error('Failed to fetch advisories:', err))
-        .finally(() => setLoading(false));
-    }
-  }, [initialAlerts.length]);
+    if (hasInitialAlerts) return;
+
+    fetch('/api/content/advisories')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setAlerts(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch advisories:', err))
+      .finally(() => setLoading(false));
+  }, [hasInitialAlerts]);
 
   useEffect(() => {
     if (alerts.length === 0) return;

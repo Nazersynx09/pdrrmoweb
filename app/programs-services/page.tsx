@@ -13,6 +13,7 @@ type AccordionItemType = {
   title: string;
   description: string;
   processing?: string;
+  note?: string;
   requirements: string[];
   category: "program" | "external" | "internal";
 };
@@ -88,14 +89,15 @@ const programs: AccordionItemType[] = [
 const externalServices: AccordionItemType[] = [
   {
     id: "ext-1",
-    title: "Financial Assistance for LGUs on Calamity Prevention",
+    title: "Financial Assistance for LGUs on Calamity Prevention/Damaged Structures",
     description: "Preparation of disbursement vouchers and supporting documents for financial assistance to LGUs for calamity prevention and repair of damaged structures.",
+    note: "Note: One original copy and two photocopies for each document.",
     processing: "8 Days",
     requirements: [
-      "Letter of request from the LGU chief executive",
-      "Approved local ordinance or resolution",
-      "Damage assessment report signed by the LDRRMO",
-      "Program of work and cost estimate",
+      "Municipal/barangay resolution as approved by the Governor",
+      "Indorsement of the governor, propose project expenditure",
+      "Program/project/Activity Design/Program of Work from concerned LGU/Barangay",
+      "Memorandum of Agreement (MOA) between the Iloilo Provincial Government and the LGU",
       "Barangay or municipal disaster risk reduction plan",
       "Certificate of no pending obligations from COA",
     ],
@@ -342,6 +344,9 @@ export default function ProgramServices() {
                     <div className="px-5 pb-5 border-t border-gray-100">
                       <p className="text-gray-600 mt-4 leading-relaxed">
                         {item.description}
+                      </p>
+                      <p className="text-gray-500 text-sm mt-2">
+                        {item.note}
                       </p>
 
                       {item.requirements.length > 0 && (

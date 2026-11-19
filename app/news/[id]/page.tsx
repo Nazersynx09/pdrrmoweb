@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { parseNewsText, renderNewsText } from "@/lib/renderNewsText";
 import {
   ArrowLeft,
   Calendar,
@@ -116,10 +117,33 @@ export default function NewsDetailPage({
   const renderContent = (content: string) => {
     const paragraphs = content.split("\n\n");
     return paragraphs.map((para, index) => {
+      const imageMatch = para.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (imageMatch) {
+        const [, caption, imageUrl] = imageMatch;
+        const plainCaption = parseNewsText(caption).text;
+        return (
+          <figure key={index} className="my-6">
+            <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
+              <Image
+                src={imageUrl}
+                alt={plainCaption}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-contain"
+              />
+            </div>
+            {plainCaption && (
+              <figcaption className="mt-2 text-center text-sm text-gray-500">
+                {renderNewsText(caption)}
+              </figcaption>
+            )}
+          </figure>
+        );
+      }
       if (para.startsWith("## ")) {
         return (
           <h2 key={index} className="text-xl font-bold text-gray-900 mt-8 mb-4">
-            {para.replace("## ", "")}
+            {renderNewsText(para.replace("## ", ""))}
           </h2>
         );
       }
@@ -132,7 +156,7 @@ export default function NewsDetailPage({
           >
             {items.map((item, i) => (
               <li key={i} className="ml-4">
-                {item.replace("- ", "")}
+                {renderNewsText(item.replace("- ", ""))}
               </li>
             ))}
           </ul>
@@ -147,7 +171,7 @@ export default function NewsDetailPage({
           >
             {items.map((item, i) => (
               <li key={i} className="ml-4">
-                {item.replace(/^\d+\.\s/, "")}
+                {renderNewsText(item.replace(/^\d+\.\s/, ""))}
               </li>
             ))}
           </ol>
@@ -155,7 +179,7 @@ export default function NewsDetailPage({
       }
       return (
         <p key={index} className="text-gray-700 leading-relaxed my-4">
-          {para}
+          {renderNewsText(para)}
         </p>
       );
     });

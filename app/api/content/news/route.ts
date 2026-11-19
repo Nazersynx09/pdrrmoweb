@@ -43,7 +43,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('news')
-    .select('id, title, slug, content, excerpt, featured_image, published_at')
+    .select('id, title, slug, excerpt, featured_image, published_at')
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 
-interface Slide {
+export interface CarouselSlide {
   title: string;
   type: string;
   image: string;
@@ -14,12 +14,15 @@ interface Slide {
   ctaLink: string;
 }
 
-type ApiSlide = Omit<Slide, "ctaLink"> & { cta_link: string | null };
+type ApiSlide = Omit<CarouselSlide, "ctaLink"> & { cta_link: string | null };
 
-
-export default function Carousel() {
-  const [slides, setSlides] = useState<Slide[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function Carousel({
+  initialSlides,
+}: {
+  initialSlides?: CarouselSlide[];
+}) {
+  const [slides, setSlides] = useState<CarouselSlide[]>(initialSlides ?? []);
+  const [loading, setLoading] = useState(initialSlides === undefined);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const progressRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -28,6 +31,8 @@ export default function Carousel() {
   const SWIPE_THRESHOLD = 50;
 
   useEffect(() => {
+    if (initialSlides !== undefined) return;
+
     async function fetchSlides() {
       try {
         const res = await fetch("/api/content/carousel");
@@ -50,7 +55,7 @@ export default function Carousel() {
       }
     }
     fetchSlides();
-  }, []);
+  }, [initialSlides]);
 
   const handleNextSlide = () =>
     setCurrentSlide((prev) => (prev + 1) % slides.length);

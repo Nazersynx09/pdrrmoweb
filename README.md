@@ -20,6 +20,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Admin access
+
+Admin pages and admin APIs require a signed-in Supabase user whose email is listed in the server-only `ADMIN_ALLOWED_EMAILS` environment variable. Admin pages verify a short-lived HttpOnly session cookie on the server before rendering, and admin APIs independently verify the user's access token. Set `ADMIN_ALLOWED_EMAILS` to a comma-separated list of approved email addresses in `.env.local` for development and in the VPS environment for deployment. If it is unset or empty, admin access is denied. The sign-in page remains public so authorized staff can log in; signing in with a non-allowlisted account does not grant admin access.
+
+On deployed environments, `proxy.ts` also hides `/login`, `/admin`, and `/api/admin` from unapproved IPs. Set `ADMIN_ALLOWED_IPS` to a comma-separated list of approved public IP addresses in the VPS environment. If it is unset or empty, these routes return 404 in production; local development is not IP-restricted. The VPS reverse proxy must overwrite `X-Real-IP` with the actual client IP, and the Next.js origin should not be publicly reachable directly. Keep Supabase authentication and the email allowlist enabled as additional protections.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

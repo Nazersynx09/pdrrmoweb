@@ -19,6 +19,11 @@ import {
   Upload,
 } from "lucide-react";
 import { uploadFile } from "@/lib/uploadFile";
+import {
+  renderNewsText,
+  serializeNewsText,
+  type NewsTextFormat,
+} from "@/lib/renderNewsText";
 
 export type BlockType =
   | "paragraph"
@@ -32,9 +37,13 @@ export interface ContentBlock {
   id: string;
   type: BlockType;
   content: string;
+  textFormats?: NewsTextFormat[];
   imageUrl?: string;
   imageCaption?: string;
+  imageCaptionFormats?: NewsTextFormat[];
 }
+
+type EditableTextField = "content" | "imageCaption";
 
 interface ContentEditorProps {
   initialBlocks?: ContentBlock[];
@@ -54,7 +63,22 @@ export default function ContentEditor({
   const [showPreview, setShowPreview] = useState(true);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [uploadingBlock, setUploadingBlock] = useState<string | null>(null);
+  const [textSelection, setTextSelection] = useState<{
+    blockId: string;
+    field: EditableTextField;
+    start: number;
+    end: number;
+  } | null>(null);
   const dragOverRef = useRef<number | null>(null);
+  const textInputRefs = useRef<
+    Record<string, HTMLInputElement | HTMLTextAreaElement | null>
+  >({});
+  const textSelectionRef = useRef<{
+    blockId: string;
+    field: EditableTextField;
+    start: number;
+    end: number;
+  } | null>(null);
 
   const nextId = useRef(1);
   const generateId = () => {
@@ -86,6 +110,222 @@ export default function ContentEditor({
     setBlocks(newBlocks);
     setActiveBlock(newBlock.id);
     onChange?.(newBlocks);
+  };
+
+  const updateTextBlock = (
+    id: string,
+    field: EditableTextField,
+    content: string,
+  ) => {
+    const block = blocks.find((item) => item.id === id);
+    if (!block) return;
+    const previousContent =
+      field === "content" ? block.content : block.imageCaption || "";
+    const previousFormats =
+      field === "content"
+        ? block.textFormats || []
+        : block.imageCaptionFormats || [];
+
+    let prefixLength = 0;
+    while (
+      prefixLength < previousContent.length &&
+      prefixLength < content.length &&
+      previousContent[prefixLength] === content[prefixLength]
+    ) {
+      prefixLength += 1;
+    }
+
+    let oldSuffixIndex = previousContent.length;
+    let newSuffixIndex = content.length;
+    while (
+      oldSuffixIndex > prefixLength &&
+      newSuffixIndex > prefixLength &&
+      previousContent[oldSuffixIndex - 1] === content[newSuffixIndex - 1]
+    ) {
+      oldSuffixIndex -= 1;
+      newSuffixIndex -= 1;
+    }
+
+    const offset = newSuffixIndex - oldSuffixIndex;
+    const textFormats = previousFormats
+      .map((format) => {
+        const mapStart = (position: number) =>
+          position <= prefixLength
+            ? position
+            : position >= oldSuffixIndex
+              ? position + offset
+              : prefixLength;
+        const mapEnd = (position: number) =>
+          position < prefixLength
+            ? position
+            : position >= oldSuffixIndex
+              ? position + offset
+              : newSuffixIndex;
+        return {
+          ...format,
+          start: mapStart(format.start),
+          end: mapEnd(format.end),
+        };
+      })
+      .filter((format) => format.end > format.start);
+
+    updateBlock(
+      id,
+      field === "content"
+        ? { content, textFormats }
+        : { imageCaption: content, imageCaptionFormats: textFormats },
+    );
+  };
+
+  const rememberTextSelection = (
+    blockId: string,
+    field: EditableTextField,
+    input: HTMLInputElement | HTMLTextAreaElement,
+  ) => {
+    const selection = {
+      blockId,
+      field,
+      start: input.selectionStart ?? 0,
+      end: input.selectionEnd ?? 0,
+    };
+    textSelectionRef.current = selection;
+    setTextSelection(selection);
+  };
+
+  const getTextInputKey = (blockId: string, field: EditableTextField) =>
+    `${blockId}:${field}`;
+
+  const applyTextFormatting = (
+    blockId: string,
+    field: EditableTextField,
+    type: NewsTextFormat["type"],
+    fontSize?: number,
+  ) => {
+    const input = textInputRefs.current[getTextInputKey(blockId, field)];
+    const selection = textSelectionRef.current;
+    if (
+      !input ||
+      !selection ||
+      selection.blockId !== blockId ||
+      selection.field !== field ||
+      selection.start === selection.end
+    ) {
+      return;
+    }
+
+    const block = blocks.find((item) => item.id === blockId);
+    if (!block) return;
+    const nextSelection = {
+      blockId,
+      field,
+      start: selection.start,
+      end: selection.end,
+    };
+
+    const format = {
+      start: selection.start,
+      end: selection.end,
+      type,
+      fontSize,
+    };
+    updateBlock(
+      blockId,
+      field === "content"
+        ? { textFormats: [...(block.textFormats || []), format] }
+        : {
+            imageCaptionFormats: [
+              ...(block.imageCaptionFormats || []),
+              format,
+            ],
+          },
+    );
+    textSelectionRef.current = nextSelection;
+    setTextSelection(nextSelection);
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(nextSelection.start, nextSelection.end);
+    });
+  };
+
+  const renderTextFormattingToolbar = (
+    blockId: string,
+    field: EditableTextField,
+  ) => {
+    const hasSelection =
+      textSelection?.blockId === blockId &&
+      textSelection.field === field &&
+      textSelection.start < textSelection.end;
+    const buttonClass =
+      "rounded border border-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40";
+
+    return (
+      <div className="flex items-center gap-1.5" aria-label="Text formatting">
+        <span className="mr-1 text-xs text-gray-500">Format selection:</span>
+        <button
+          type="button"
+          aria-label="Bold"
+          title="Bold"
+          disabled={!hasSelection}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => applyTextFormatting(blockId, field, "bold")}
+          className={buttonClass}
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          aria-label="Italic"
+          title="Italic"
+          disabled={!hasSelection}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => applyTextFormatting(blockId, field, "italic")}
+          className={buttonClass}
+        >
+          <em>I</em>
+        </button>
+        <button
+          type="button"
+          aria-label="Underline"
+          title="Underline"
+          disabled={!hasSelection}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => applyTextFormatting(blockId, field, "underline")}
+          className={buttonClass}
+        >
+          <span className="underline">U</span>
+        </button>
+        <select
+          aria-label="Font size"
+          defaultValue=""
+          disabled={!hasSelection}
+          onMouseDown={() => {
+            const input =
+              textInputRefs.current[getTextInputKey(blockId, field)];
+            if (input) rememberTextSelection(blockId, field, input);
+          }}
+          onChange={(event) => {
+            const size = event.currentTarget.value;
+            if (size) {
+              applyTextFormatting(
+                blockId,
+                field,
+                "font-size",
+                Number(size),
+              );
+              event.currentTarget.value = "";
+            }
+          }}
+          className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <option value="">Size</option>
+          <option value="12">12 px</option>
+          <option value="14">14 px</option>
+          <option value="16">16 px</option>
+          <option value="18">18 px</option>
+          <option value="24">24 px</option>
+        </select>
+      </div>
+    );
   };
 
   const updateBlock = (id: string, updates: Partial<ContentBlock>) => {
@@ -264,22 +504,74 @@ export default function ContentEditor({
                 {/* Block inputs */}
                 {block.type === "paragraph" && (
                   <textarea
+                    ref={(element) => {
+                      textInputRefs.current[
+                        getTextInputKey(block.id, "content")
+                      ] = element;
+                    }}
                     value={block.content}
-                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                    onChange={(e) => {
+                      updateTextBlock(block.id, "content", e.target.value);
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      );
+                    }}
                     placeholder="Enter paragraph text..."
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] focus:border-transparent resize-none min-h-[80px] text-gray-900 placeholder:text-gray-400 text-sm"
-                    onFocus={() => setActiveBlock(block.id)}
+                    onFocus={(e) => {
+                      setActiveBlock(block.id);
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      );
+                    }}
+                    onSelect={(e) =>
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      )
+                    }
                   />
                 )}
 
                 {block.type === "heading" && (
                   <input
                     type="text"
+                    ref={(element) => {
+                      textInputRefs.current[
+                        getTextInputKey(block.id, "content")
+                      ] = element;
+                    }}
                     value={block.content}
-                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                    onChange={(e) => {
+                      updateTextBlock(block.id, "content", e.target.value);
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      );
+                    }}
                     placeholder="Enter heading..."
                     className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] focus:border-transparent text-lg font-semibold text-gray-900 placeholder:text-gray-400"
-                    onFocus={() => setActiveBlock(block.id)}
+                    onFocus={(e) => {
+                      setActiveBlock(block.id);
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      );
+                    }}
+                    onSelect={(e) =>
+                      rememberTextSelection(
+                        block.id,
+                        "content",
+                        e.currentTarget,
+                      )
+                    }
                   />
                 )}
 
@@ -339,10 +631,42 @@ export default function ContentEditor({
                     <input
                       type="text"
                       value={block.imageCaption || ""}
-                      onChange={(e) => updateBlock(block.id, { imageCaption: e.target.value })}
+                      ref={(element) => {
+                        textInputRefs.current[
+                          getTextInputKey(block.id, "imageCaption")
+                        ] = element;
+                      }}
+                      onChange={(e) => {
+                        updateTextBlock(
+                          block.id,
+                          "imageCaption",
+                          e.target.value,
+                        );
+                        rememberTextSelection(
+                          block.id,
+                          "imageCaption",
+                          e.currentTarget,
+                        );
+                      }}
                       placeholder="Image caption (optional)"
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-sm text-gray-900 placeholder:text-gray-400"
+                      onFocus={(e) => {
+                        setActiveBlock(block.id);
+                        rememberTextSelection(
+                          block.id,
+                          "imageCaption",
+                          e.currentTarget,
+                        );
+                      }}
+                      onSelect={(e) =>
+                        rememberTextSelection(
+                          block.id,
+                          "imageCaption",
+                          e.currentTarget,
+                        )
+                      }
                     />
+                    {renderTextFormattingToolbar(block.id, "imageCaption")}
                   </div>
                 )}
 
@@ -350,11 +674,37 @@ export default function ContentEditor({
                   <div className="flex">
                     <div className="w-1 bg-[#F58220] rounded-full mr-3 shrink-0" />
                     <textarea
+                      ref={(element) => {
+                        textInputRefs.current[
+                          getTextInputKey(block.id, "content")
+                        ] = element;
+                      }}
                       value={block.content}
-                      onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                      onChange={(e) => {
+                        updateTextBlock(block.id, "content", e.target.value);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
                       placeholder="Enter quote text..."
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] resize-none min-h-[60px] italic text-gray-900 placeholder:text-gray-400 text-sm"
-                      onFocus={() => setActiveBlock(block.id)}
+                      onFocus={(e) => {
+                        setActiveBlock(block.id);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
+                      onSelect={(e) =>
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        )
+                      }
                     />
                   </div>
                 )}
@@ -364,11 +714,37 @@ export default function ContentEditor({
                     <span className="text-[#002E5D] text-lg shrink-0">•</span>
                     <input
                       type="text"
+                      ref={(element) => {
+                        textInputRefs.current[
+                          getTextInputKey(block.id, "content")
+                        ] = element;
+                      }}
                       value={block.content}
-                      onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                      onChange={(e) => {
+                        updateTextBlock(block.id, "content", e.target.value);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
                       placeholder="Enter list item..."
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-gray-900 placeholder:text-gray-400 text-sm"
-                      onFocus={() => setActiveBlock(block.id)}
+                      onFocus={(e) => {
+                        setActiveBlock(block.id);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
+                      onSelect={(e) =>
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        )
+                      }
                     />
                   </div>
                 )}
@@ -378,14 +754,42 @@ export default function ContentEditor({
                     <span className="font-semibold text-[#002E5D] shrink-0">{index + 1}.</span>
                     <input
                       type="text"
+                      ref={(element) => {
+                        textInputRefs.current[
+                          getTextInputKey(block.id, "content")
+                        ] = element;
+                      }}
                       value={block.content}
-                      onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                      onChange={(e) => {
+                        updateTextBlock(block.id, "content", e.target.value);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
                       placeholder="Enter list item..."
                       className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-gray-900 placeholder:text-gray-400 text-sm"
-                      onFocus={() => setActiveBlock(block.id)}
+                      onFocus={(e) => {
+                        setActiveBlock(block.id);
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        );
+                      }}
+                      onSelect={(e) =>
+                        rememberTextSelection(
+                          block.id,
+                          "content",
+                          e.currentTarget,
+                        )
+                      }
                     />
                   </div>
                 )}
+                {block.type !== "image" &&
+                  renderTextFormattingToolbar(block.id, "content")}
               </div>
             </div>
           );
@@ -432,14 +836,18 @@ export default function ContentEditor({
           if (block.type === "paragraph" && block.content) {
             return (
               <p key={block.id} className="text-gray-700 leading-relaxed mb-4 text-sm">
-                {block.content}
+                {renderNewsText(
+                  serializeNewsText(block.content, block.textFormats),
+                )}
               </p>
             );
           }
           if (block.type === "heading" && block.content) {
             return (
               <h2 key={block.id} className="text-xl font-bold text-gray-900 mb-4 mt-6">
-                {block.content}
+                {renderNewsText(
+                  serializeNewsText(block.content, block.textFormats),
+                )}
               </h2>
             );
           }
@@ -451,7 +859,12 @@ export default function ContentEditor({
                 </div>
                 {block.imageCaption && (
                   <figcaption className="text-center text-sm text-gray-500 mt-2">
-                    {block.imageCaption}
+                    {renderNewsText(
+                      serializeNewsText(
+                        block.imageCaption,
+                        block.imageCaptionFormats,
+                      ),
+                    )}
                   </figcaption>
                 )}
               </figure>
@@ -460,21 +873,31 @@ export default function ContentEditor({
           if (block.type === "quote" && block.content) {
             return (
               <blockquote key={block.id} className="border-l-4 border-[#F58220] pl-4 my-4 italic text-gray-700 text-sm">
-                {block.content}
+                {renderNewsText(
+                  serializeNewsText(block.content, block.textFormats),
+                )}
               </blockquote>
             );
           }
           if (block.type === "bullet" && block.content) {
             return (
               <ul key={block.id} className="list-disc list-inside my-2 text-gray-700 text-sm">
-                <li className="ml-4">{block.content}</li>
+                <li className="ml-4">
+                  {renderNewsText(
+                    serializeNewsText(block.content, block.textFormats),
+                  )}
+                </li>
               </ul>
             );
           }
           if (block.type === "numbered" && block.content) {
             return (
               <ol key={block.id} className="list-decimal list-inside my-2 text-gray-700 text-sm">
-                <li className="ml-4">{block.content}</li>
+                <li className="ml-4">
+                  {renderNewsText(
+                    serializeNewsText(block.content, block.textFormats),
+                  )}
+                </li>
               </ol>
             );
           }

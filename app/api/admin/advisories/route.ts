@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getAdminClient } from '../_auth';
 import {createClient} from '@supabase/supabase-js';
 
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
   }]).select(advisoryAdminColumns).single();
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  revalidatePath('/');
   return NextResponse.json({ success: true, data });
 }
 
@@ -67,6 +69,7 @@ export async function PUT(request: NextRequest) {
 
   const { data, error } = await client.from('advisories').update(updates).eq('id', id).select(advisoryAdminColumns).single();
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  revalidatePath('/');
   return NextResponse.json({ success: true, data });
 }
 
@@ -80,5 +83,6 @@ export async function DELETE(request: NextRequest) {
 
   const { error } = await client.from('advisories').delete().eq('id', id);
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  revalidatePath('/');
   return NextResponse.json({ success: true });
 }

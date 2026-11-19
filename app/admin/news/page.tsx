@@ -13,6 +13,7 @@ import {
 import ContentEditor, { ContentBlock } from "@/components/admin/ContentEditor";
 import ImageUpload from "@/components/ImageUpload";
 import { useAdminApi } from "@/lib/hooks/useAdminApi";
+import { parseNewsText, serializeNewsText } from "@/lib/renderNewsText";
 
 interface NewsItem {
   id: string;
@@ -110,11 +111,46 @@ export default function NewsPage() {
   const parseContentToBlocks = (content: string): ContentBlock[] => {
     if (!content) return [{ id: "1", type: "paragraph", content: "" }];
     return content.split("\n\n").map((part, index) => {
-      if (part.startsWith("## ")) return { id: String(index), type: "heading" as const, content: part.replace("## ", "") };
-      if (part.startsWith("> ")) return { id: String(index), type: "quote" as const, content: part.replace("> ", "") };
-      if (part.startsWith("- ")) return { id: String(index), type: "bullet" as const, content: part.replace("- ", "") };
-      return { id: String(index), type: "paragraph" as const, content: part };
-    }).filter(b => b.content);
+      const imageMatch = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (imageMatch) {
+        const parsedCaption = parseNewsText(imageMatch[1]);
+        return {
+          id: String(index),
+          type: "image" as const,
+          content: "",
+          imageCaption: parsedCaption.text,
+          imageCaptionFormats: parsedCaption.formats,
+          imageUrl: imageMatch[2],
+        };
+      }
+
+      const type: ContentBlock["type"] = part.startsWith("## ")
+        ? "heading"
+        : part.startsWith("> ")
+          ? "quote"
+          : part.startsWith("- ")
+            ? "bullet"
+            : /^\d+\.\s/.test(part)
+              ? "numbered"
+              : "paragraph";
+      const rawText =
+        type === "heading"
+          ? part.slice(3)
+          : type === "quote"
+            ? part.slice(2)
+            : type === "bullet"
+              ? part.slice(2)
+              : type === "numbered"
+                ? part.replace(/^\d+\.\s/, "")
+                : part;
+      const parsedText = parseNewsText(rawText);
+      return {
+        id: String(index),
+        type,
+        content: parsedText.text,
+        textFormats: parsedText.formats,
+      };
+    }).filter(block => block.type === "image" || block.content);
   };
 
   const getStatusBadge = (status: string) => {
@@ -265,13 +301,23 @@ export default function NewsPage() {
                     setFormData(prev => ({
                       ...prev,
                       content: blocks.map((b) => {
-                        if (b.type === "paragraph") return b.content;
-                        if (b.type === "heading") return `## ${b.content}`;
-                        if (b.type === "image") return `![${b.imageCaption || ""}](${b.imageUrl})`;
-                        if (b.type === "quote") return `> ${b.content}`;
-                        if (b.type === "bullet") return `- ${b.content}`;
-                        if (b.type === "numbered") return `1. ${b.content}`;
-                        return b.content;
+                        const content = serializeNewsText(
+                          b.content,
+                          b.textFormats,
+                        );
+                        if (b.type === "paragraph") return content;
+                        if (b.type === "heading") return `## ${content}`;
+                        if (b.type === "image") {
+                          const caption = serializeNewsText(
+                            b.imageCaption || "",
+                            b.imageCaptionFormats,
+                          );
+                          return `![${caption}](${b.imageUrl})`;
+                        }
+                        if (b.type === "quote") return `> ${content}`;
+                        if (b.type === "bullet") return `- ${content}`;
+                        if (b.type === "numbered") return `1. ${content}`;
+                        return content;
                       }).join("\n\n"),
                     }));
                   }}

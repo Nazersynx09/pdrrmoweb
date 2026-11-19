@@ -104,6 +104,7 @@ export default function UpdatesSection({
                   <a
                     key={issuance.id}
                     href={issuance.href || undefined}
+                    data-analytics-download
                     target={issuance.href ? "_blank" : undefined}
                     rel={issuance.href ? "noopener noreferrer" : undefined}
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#F58220] hover:bg-orange-50 group transition"

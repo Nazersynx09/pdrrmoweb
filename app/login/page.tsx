@@ -19,15 +19,39 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
         setError(error?.message || 'Failed to sign in. Please try again.');
         setLoading(false);
-      } else {
-        // Wait a moment before redirecting to ensure auth state is updated
-        setTimeout(() => router.push('/admin'), 500);
+        return;
       }
+
+      const session = data.session;
+      if (!session) {
+        setError('Could not establish a sign-in session. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      const accessCheck = await fetch('/api/admin/session', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (accessCheck.status === 403) {
+        await supabase.auth.signOut();
+        setError('This account is not authorized to access the admin panel.');
+        setLoading(false);
+        return;
+      }
+
+      if (!accessCheck.ok) {
+        await supabase.auth.signOut();
+        throw new Error('Unable to verify admin access. Please try again.');
+      }
+
+      router.replace('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       setLoading(false);
