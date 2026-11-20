@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, X } from "lucide-react"
+import { ChevronDown, Menu, X } from "lucide-react"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -73,15 +73,22 @@ export default function Navbar() {
           {/* About Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
+              type="button"
+              aria-expanded={isAboutOpen}
+              aria-controls="about-dropdown"
               onClick={() => setIsAboutOpen(!isAboutOpen)}
-              className={`uppercase font-semibold tracking-wide transition-colors ${
+              className={`inline-flex items-center gap-1 uppercase font-semibold tracking-wide transition-colors ${
                 isAboutOpen ? "text-[#F58220]" : "text-white hover:text-[#F58220]"
               }`}
             >
               About
+              <ChevronDown
+                aria-hidden="true"
+                className={`h-3.5 w-3.5 transition-transform ${isAboutOpen ? "rotate-180" : ""}`}
+              />
             </button>
             {isAboutOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-[#001f45] border border-white/10 rounded-md shadow-lg overflow-hidden">
+              <div id="about-dropdown" className="absolute top-full left-0 mt-2 w-48 bg-[#001f45] border border-white/10 rounded-md shadow-lg overflow-hidden">
                 <Link
                   href="/about-pdrrmo"
                   onClick={() => setIsAboutOpen(false)}
@@ -102,6 +109,9 @@ export default function Navbar() {
 
           <Link href="/news" className="hover:text-[#F58220] transition">
             News
+          </Link>
+          <Link href="/videos" className="hover:text-[#F58220] transition">
+            Videos
           </Link>
           <Link href="/programs-services" className="hover:text-[#F58220] transition">
             Programs and Services
@@ -163,17 +173,20 @@ export default function Navbar() {
                 <div className="py-3">
                   <button
                     type="button"
+                    aria-expanded={isMobileAboutOpen}
+                    aria-controls="mobile-about-dropdown"
                     onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
                     className="w-full flex justify-between items-center text-xs font-semibold uppercase tracking-wide hover:text-[#F58220] transition"
                   >
                     About
-                    <span className="text-white/60">
-                      {isMobileAboutOpen ? "−" : "+"}
-                    </span>
+                    <ChevronDown
+                      aria-hidden="true"
+                      className={`h-4 w-4 text-white/60 transition-transform ${isMobileAboutOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
 
                   {isMobileAboutOpen && (
-                    <div className="flex flex-col gap-4 pl-3 mt-2 border-l border-white/20">
+                    <div id="mobile-about-dropdown" className="flex flex-col gap-4 pl-3 mt-2 border-l border-white/20">
                       <Link
                         href="/about-pdrrmo"
                         onClick={() => {
@@ -201,6 +214,7 @@ export default function Navbar() {
 
             {[
               ["News", "/news"],
+              ["Videos", "/videos"],
               ["Programs and Services", "/programs-services"],
               ["Resources", "/resources"],
               ["Operation Center", "/operation-center"],

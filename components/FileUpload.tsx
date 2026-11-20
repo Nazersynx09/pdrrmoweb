@@ -2,7 +2,11 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, FileText, Image as ImageIcon, File, Trash2, Eye } from "lucide-react";
-import { uploadFile } from '@/lib/uploadFile';
+import {
+  IMAGE_COMPRESSION_THRESHOLD_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  uploadFile,
+} from '@/lib/uploadFile';
 
 interface FileUploadProps {
   value?: string | null;
@@ -53,8 +57,17 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
     alert('Please upload a PDF or image file');
     return;
   }
-  if (file.size > 10 * 1024 * 1024) {
-    alert('File must be under 10MB');
+  const maxFileSize = file.type.startsWith('image/') ? MAX_IMAGE_UPLOAD_BYTES : 10 * 1024 * 1024;
+  if (file.size > maxFileSize) {
+    alert(file.type.startsWith('image/') ? "Image exceeds TinyPNG's 500MB limit" : 'File must be under 10MB');
+    return;
+  }
+  if (
+    file.type.startsWith('image/') &&
+    file.size > IMAGE_COMPRESSION_THRESHOLD_BYTES &&
+    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  ) {
+    alert('Images over 5MB must be JPG, PNG, or WebP');
     return;
   }
   setUploading(true);
@@ -156,7 +169,7 @@ export default function FileUpload({ value, onChange, label, accept = ".pdf,.jpg
                 <p className="text-sm text-gray-500 mt-1">
                   Drag and drop or click to browse
                 </p>
-                <p className="text-xs text-gray-400">PDF, JPG, PNG up to 10MB</p>
+                <p className="text-xs text-gray-400">PDFs up to 10MB; JPG, PNG, or WebP over 5MB are compressed by TinyPNG (up to 500MB)</p>
               </>
             )}
           </div>

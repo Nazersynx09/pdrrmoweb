@@ -4,6 +4,7 @@ import { getAdminClient } from "../_auth";
 const hazardMapTypes = [
   "flood",
   "landslide",
+  "liquefaction",
   "earthquake",
   "storm_surge",
   "tsunami",
@@ -29,6 +30,11 @@ function isHazardMapType(value: unknown): value is HazardMapType {
     typeof value === "string" &&
     hazardMapTypes.includes(value as HazardMapType)
   );
+}
+
+function normalizeHazardMapType(value: unknown): HazardMapType | null {
+  const normalizedValue = value === "Liquefaction" ? "liquefaction" : value;
+  return isHazardMapType(normalizedValue) ? normalizedValue : null;
 }
 
 function isValidImageUrl(value: string, allowEmpty = false) {
@@ -99,7 +105,8 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  if (!isHazardMapType(type)) {
+  const normalizedType = normalizeHazardMapType(type);
+  if (!normalizedType) {
     return NextResponse.json(
       { success: false, error: "Invalid hazard map type" },
       { status: 400 },
@@ -138,7 +145,7 @@ export async function POST(request: NextRequest) {
     .from("hazard_maps")
     .insert({
       title: title.trim(),
-      type,
+      type: normalizedType,
       file_url: file_url.trim(),
       thumbnail: typeof thumbnail === "string" ? thumbnail.trim() : "",
       description: typeof description === "string" ? description.trim() : "",
@@ -192,13 +199,14 @@ export async function PUT(request: NextRequest) {
     updates.title = body.title.trim();
   }
   if ("type" in body) {
-    if (!isHazardMapType(body.type)) {
+    const type = normalizeHazardMapType(body.type);
+    if (!type) {
       return NextResponse.json(
         { success: false, error: "Invalid hazard map type" },
         { status: 400 },
       );
     }
-    updates.type = body.type;
+    updates.type = type;
   }
   if ("file_url" in body) {
     if (

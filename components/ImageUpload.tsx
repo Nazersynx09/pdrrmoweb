@@ -3,7 +3,11 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Upload, X, ImageIcon, Trash2 } from "lucide-react";
-import { uploadFile } from '@/lib/uploadFile';
+import {
+  IMAGE_COMPRESSION_THRESHOLD_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  uploadFile,
+} from '@/lib/uploadFile';
 
 interface ImageUploadProps {
   value: string;
@@ -48,8 +52,15 @@ export default function ImageUpload({ value, onChange, label }: ImageUploadProps
     alert('Please select an image file');
     return;
   }
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Image must be under 5MB');
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    alert("Image exceeds TinyPNG's 500MB limit");
+    return;
+  }
+  if (
+    file.size > IMAGE_COMPRESSION_THRESHOLD_BYTES &&
+    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  ) {
+    alert('Images over 5MB must be JPG, PNG, or WebP');
     return;
   }
   setUploading(true);
@@ -131,7 +142,7 @@ export default function ImageUpload({ value, onChange, label }: ImageUploadProps
                 <p className="text-sm text-gray-500 mt-1">
                   Drag and drop or click to browse
                 </p>
-                <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
+                <p className="text-xs text-gray-400">JPG, PNG, or WebP over 5MB are compressed by TinyPNG (up to 500MB); other images up to 5MB</p>
               </>
             )}
           </div>

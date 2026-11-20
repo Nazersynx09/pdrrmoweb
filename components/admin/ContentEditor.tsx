@@ -18,7 +18,11 @@ import {
   ArrowUp,
   Upload,
 } from "lucide-react";
-import { uploadFile } from "@/lib/uploadFile";
+import {
+  IMAGE_COMPRESSION_THRESHOLD_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  uploadFile,
+} from "@/lib/uploadFile";
 import {
   renderNewsText,
   serializeNewsText,
@@ -643,7 +647,7 @@ export default function ContentEditor({
                       <label className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#F58220] transition-colors cursor-pointer block">
                       <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">Click to upload an image</p>
-                      <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                      <p className="text-xs text-gray-400 mt-1">JPG, PNG, or WebP over 5MB are compressed by TinyPNG (up to 500MB); other images up to 5MB</p>
                       <input
                         type="file"
                         accept="image/*"
@@ -652,8 +656,16 @@ export default function ContentEditor({
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) {
-                            alert("Image must be under 5MB");
+                          if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+                            alert("Image exceeds TinyPNG's 500MB limit");
+                            e.target.value = "";
+                            return;
+                          }
+                          if (
+                            file.size > IMAGE_COMPRESSION_THRESHOLD_BYTES &&
+                            !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+                          ) {
+                            alert("Images over 5MB must be JPG, PNG, or WebP");
                             e.target.value = "";
                             return;
                           }

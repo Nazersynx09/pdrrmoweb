@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Map, Image as ImageIcon } from 'lucide-react';
 import { useAdminApi } from "@/lib/hooks/useAdminApi";
-import { uploadFile } from "@/lib/uploadFile";
+import {
+  IMAGE_COMPRESSION_THRESHOLD_BYTES,
+  MAX_IMAGE_UPLOAD_BYTES,
+  uploadFile,
+} from "@/lib/uploadFile";
 
 interface HazardMap {
   id: string;
   title: string;
-  type: 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami';
+  type: 'flood' | 'landslide' | 'liquefaction' | 'earthquake' | 'storm_surge' | 'tsunami';
   file_url: string;
   description: string;
   created_at: string;
@@ -27,7 +31,7 @@ export default function HazardMapsPage() {
 
   const [formData, setFormData] = useState({
     title: '',
-    type: 'flood' as 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami',
+    type: 'flood' as 'flood' | 'landslide' | 'liquefaction' | 'earthquake' | 'storm_surge' | 'tsunami',
     file_url: '',
     description: '',
   });
@@ -48,8 +52,16 @@ export default function HazardMapsPage() {
       event.target.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setFormError('Map images must be 5 MB or smaller.');
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      setFormError("Map images must be under TinyPNG's 500 MB limit.");
+      event.target.value = '';
+      return;
+    }
+    if (
+      file.size > IMAGE_COMPRESSION_THRESHOLD_BYTES &&
+      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+    ) {
+      setFormError('Images over 5 MB must be JPG, PNG, or WebP.');
       event.target.value = '';
       return;
     }
@@ -146,6 +158,7 @@ export default function HazardMapsPage() {
     const styles = {
       flood: 'bg-blue-100 text-blue-800',
       landslide: 'bg-green-100 text-green-800',
+      liquefaction: 'bg-yellow-100 text-yellow-800',
       earthquake: 'bg-red-100 text-red-800',
       storm_surge: 'bg-purple-100 text-purple-800',
       tsunami: 'bg-amber-100 text-amber-800',
@@ -153,6 +166,7 @@ export default function HazardMapsPage() {
     const labels = {
       flood: 'Flood',
       landslide: 'Landslide',
+      liquefaction: 'Liquefaction',
       earthquake: 'Earthquake',
       storm_surge: 'Storm Surge',
       tsunami: 'Tsunami',
@@ -223,6 +237,7 @@ export default function HazardMapsPage() {
               <option value="all">All Types</option>
               <option value="flood">Flood</option>
               <option value="landslide">Landslide</option>
+              <option value="liquefaction">Liquefaction</option>
               <option value="earthquake">Earthquake</option>
               <option value="storm_surge">Storm Surge</option>
               <option value="tsunami">Tsunami</option>
@@ -346,11 +361,12 @@ export default function HazardMapsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'flood' | 'landslide' | 'earthquake' | 'storm_surge' | 'tsunami' })}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'flood' | 'landslide' | 'liquefaction' | 'earthquake' | 'storm_surge' | 'tsunami' })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F58220] text-black"
                 >
                   <option value="flood">Flood</option>
                   <option value="landslide">Landslide</option>
+                  <option value="liquefaction">Liquefaction</option>
                   <option value="earthquake">Earthquake</option>
                   <option value="storm_surge">Storm Surge</option>
                   <option value="tsunami">Tsunami</option>
@@ -382,7 +398,7 @@ export default function HazardMapsPage() {
                 <p className="mt-1 text-xs text-gray-500">
                   {uploadingImage
                     ? 'Uploading image...'
-                    : 'Upload a JPG, PNG, GIF, or WebP image up to 5 MB, or enter a public image URL/path below.'}
+                    : 'Upload a JPG, PNG, or WebP over 5 MB for automatic TinyPNG compression (up to 500 MB); GIFs must be 5 MB or smaller, or enter a public image URL/path below.'}
                 </p>
                 {formData.file_url && (
                   <a
