@@ -249,9 +249,9 @@ export default function AdminDashboard() {
               {recentActivity.map((activity, index) => (
                 <li key={activity.id} className="relative flex gap-4 pb-6 last:pb-0">
                   {index !== recentActivity.length - 1 && (
-                    <span className="absolute left-[5px] top-4 h-full w-px bg-gray-200" aria-hidden="true" />
+                    <span className="absolute left-5px top-4 h-full w-px bg-gray-200" aria-hidden="true" />
                   )}
-                  <span className="relative mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full border-2 border-[#F58220] bg-white" />
+                  <span className="relative mt-1.5 h-11px w-11px shrink-0 rounded-full border-2 border-[#F58220] bg-white" />
                   <div className="min-w-0">
                     <p className="font-medium capitalize text-gray-900">
                       {activity.action} {activity.entityType}
@@ -368,7 +368,7 @@ function VisitorVisitsChart({ visits }: { visits: DailyVisit[] }) {
     <div>
       {/* Readout + range toggle */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-h-[52px]" aria-live="polite">
+        <div className="min-h-52px" aria-live="polite">
           {active ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{formatDay(active.date)}</p>

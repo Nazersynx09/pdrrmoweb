@@ -36,7 +36,7 @@ function NewsCard({ item }: { item: NewsItem }) {
       href={`/news/${item.id}`}
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
-      <div className="relative aspect-[16/10] bg-gray-100">
+      <div className="relative aspect-16/10 bg-gray-100">
         {item.featured_image ? (
           <Image
             src={item.featured_image}
@@ -143,7 +143,7 @@ export default function NewsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Featured story */}
       {featuredNews ? (
-        <section className="relative min-h-[380px] overflow-hidden bg-[#002E5D] md:min-h-[420px]">
+        <section className="relative min-h-380px overflow-hidden bg-[#002E5D] md:min-h-420px">
           {featuredNews.featured_image && (
             <Image
               src={featuredNews.featured_image}
@@ -154,8 +154,8 @@ export default function NewsPage() {
               priority
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#002E5D] via-[#002E5D]/70 to-transparent" />
-          <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col justify-end px-4 py-10 md:min-h-[420px] sm:px-6 lg:px-8">
+          <div className="absolute inset-0 bg-linear-to-t from-[#002E5D] via-[#002E5D]/70 to-transparent" />
+          <div className="relative mx-auto flex min-h-380px max-w-7xl flex-col justify-end px-4 py-10 md:min-h-420px sm:px-6 lg:px-8">
             <div className="mb-4">
               <span className="inline-flex items-center gap-2 bg-[#F58220] text-white text-xs font-semibold px-3 py-1 rounded-full">
                 <Clock className="w-3 h-3" />
@@ -187,7 +187,7 @@ export default function NewsPage() {
           </div>
         </section>
       ) : (
-        <div className="min-h-[250px] bg-[#002E5D] flex items-center justify-center">
+        <div className="min-h-250px bg-[#002E5D] flex items-center justify-center">
           <div className="text-center px-4">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">News & Updates</h1>
             <p className="text-white/70">Stay updated with the latest news from PDRRMO Iloilo</p>

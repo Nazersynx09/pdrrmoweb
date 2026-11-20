@@ -109,7 +109,7 @@ export default function Carousel({
     <section className="py-8 sm:py-12 bg-gray-50">
       <div className="max-w-6xl mx-auto px-3 sm:px-6">
         <div
-          className="overflow-hidden relative bg-gray-900 rounded-2xl shadow-2xl aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/9]"
+          className="overflow-hidden relative bg-gray-900 rounded-2xl shadow-2xl aspect-4/3 sm:aspect-16/7 lg:aspect-21/9"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           style={{ touchAction: "pan-y" }}
@@ -134,8 +134,8 @@ export default function Carousel({
                   priority={i === 0}
                   unoptimized={slide.image?.startsWith("data:")}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/80 sm:via-black/50 sm:to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent sm:bg-linear-to-r sm:from-black/80 sm:via-black/50 sm:to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
 
                 <div className="relative z-10 text-white px-5 pb-8 sm:px-10 sm:pb-0 lg:px-16 max-w-2xl w-full sm:w-auto">
                   <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 bg-[#F58220] text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded mb-2 sm:mb-4">

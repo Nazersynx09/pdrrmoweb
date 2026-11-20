@@ -219,7 +219,7 @@ export default function NewsDetailPage({
         </header>
 
         {displayNews.featured_image && (
-          <div className="relative h-[400px] rounded-xl overflow-hidden mb-8">
+          <div className="relative h-400px rounded-xl overflow-hidden mb-8">
             <Image
               src={displayNews.featured_image}
               alt={displayNews.title}
