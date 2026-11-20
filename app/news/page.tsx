@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, ChevronRight, Clock, ArrowLeft } from "lucide-react";
+import { Calendar, ChevronRight, Clock } from "lucide-react";
 
 interface NewsItem {
   id: string;
@@ -34,9 +34,9 @@ function NewsCard({ item }: { item: NewsItem }) {
   return (
     <Link
       href={`/news/${item.id}`}
-      className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
-      <div className="relative h-48 bg-gray-100">
+      <div className="relative aspect-[16/10] bg-gray-100">
         {item.featured_image ? (
           <Image
             src={item.featured_image}
@@ -51,7 +51,7 @@ function NewsCard({ item }: { item: NewsItem }) {
           </div>
         )}
       </div>
-      <div className="p-4">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
           <Calendar className="w-3 h-3" />
           <span>{formattedDate}</span>
@@ -59,7 +59,12 @@ function NewsCard({ item }: { item: NewsItem }) {
         <h3 className="font-semibold text-gray-900 group-hover:text-[#F58220] transition-colors line-clamp-2">
           {item.title}
         </h3>
-        <p className="text-sm text-gray-600 mt-2 line-clamp-2">{item.excerpt}</p>
+        {item.excerpt && (
+          <p className="mt-2 line-clamp-2 text-sm text-gray-600">{item.excerpt}</p>
+        )}
+        <span className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-[#F58220]">
+          Read story <ChevronRight className="h-3.5 w-3.5" />
+        </span>
       </div>
     </Link>
   );
@@ -69,9 +74,9 @@ function NewsSection({ title, items }: NewsSectionProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mb-12">
-      <div className="flex items-center gap-2 mb-6">
-        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+    <section className="mb-10">
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="text-xl font-bold text-[#002E5D]">{title}</h2>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -107,34 +112,22 @@ export default function NewsPage() {
     fetchNews();
   }, []);
 
-  const categorizeByDate = (items: NewsItem[]) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+  const latestItems = featuredNews
+    ? news.filter((item) => item.id !== featuredNews.id).slice(0, 3)
+    : news.slice(0, 3);
+  const latestIds = new Set([...(featuredNews ? [featuredNews.id] : []), ...latestItems.map((item) => item.id)]);
+  const archivedNews = news.filter((item) => !latestIds.has(item.id));
+  const olderPostsByMonth = new Map<string, NewsItem[]>();
 
-    const todayItems: NewsItem[] = [];
-    const thisWeekItems: NewsItem[] = [];
-    const thisMonthItems: NewsItem[] = [];
-    const olderItems: NewsItem[] = [];
+  archivedNews.forEach((item) => {
+    const date = new Date(item.published_at);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
-    items.forEach((item) => {
-      const itemDate = new Date(item.published_at);
-      if (itemDate >= today) {
-        todayItems.push(item);
-      } else if (itemDate >= weekAgo) {
-        thisWeekItems.push(item);
-      } else if (itemDate >= monthAgo) {
-        thisMonthItems.push(item);
-      } else {
-        olderItems.push(item);
-      }
-    });
-
-    return { todayItems, thisWeekItems, thisMonthItems, olderItems };
-  };
-
-  const { todayItems, thisWeekItems, thisMonthItems, olderItems } = categorizeByDate(news);
+    if (!olderPostsByMonth.has(monthKey)) {
+      olderPostsByMonth.set(monthKey, []);
+    }
+    olderPostsByMonth.get(monthKey)?.push(item);
+  });
 
   if (loading) {
     return (
@@ -148,31 +141,28 @@ export default function NewsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* NavbarPlaceholder */}
-      <div className="h-16 bg-[#002E5D]" />
-
-      {/* Hero/Splash Section */}
+      {/* Featured story */}
       {featuredNews ? (
-        <div className="relative h-[50vh] min-h-[400px] bg-[#002E5D]">
+        <section className="relative min-h-[380px] overflow-hidden bg-[#002E5D] md:min-h-[420px]">
           {featuredNews.featured_image && (
             <Image
               src={featuredNews.featured_image}
               alt={featuredNews.title}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="100vw"
               className="object-cover opacity-30"
               priority
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#002E5D] via-[#002E5D]/70 to-transparent" />
-          <div className="relative max-w-7xl mx-auto px-4 h-full flex flex-col justify-end pb-12">
+          <div className="relative mx-auto flex min-h-[380px] max-w-7xl flex-col justify-end px-4 py-10 md:min-h-[420px] sm:px-6 lg:px-8">
             <div className="mb-4">
               <span className="inline-flex items-center gap-2 bg-[#F58220] text-white text-xs font-semibold px-3 py-1 rounded-full">
                 <Clock className="w-3 h-3" />
                 Featured News
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 max-w-4xl">
+            <h1 className="mb-4 max-w-4xl text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
               {featuredNews.title}
             </h1>
             <p className="text-lg text-white/80 max-w-2xl mb-6 line-clamp-2">
@@ -195,9 +185,9 @@ export default function NewsPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
       ) : (
-        <div className="h-[30vh] min-h-[250px] bg-[#002E5D] flex items-center justify-center">
+        <div className="min-h-[250px] bg-[#002E5D] flex items-center justify-center">
           <div className="text-center px-4">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">News & Updates</h1>
             <p className="text-white/70">Stay updated with the latest news from PDRRMO Iloilo</p>
@@ -205,26 +195,15 @@ export default function NewsPage() {
         </div>
       )}
 
-      {/* Back Link */}
-      {/* <div className="max-w-7xl mx-auto px-4 py-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-[#F58220] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Link>
-      </div> */}
-
       {/* Latest News Cards */}
-      {news.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 mb-12">
-          <div className="flex items-center gap-2 mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Latest News</h2>
+      {latestItems.length > 0 && (
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-center gap-3">
+            <h2 className="text-xl font-bold text-[#002E5D]">Latest News</h2>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.slice(0, 4).map((item) => (
+            {latestItems.map((item) => (
               <NewsCard key={item.id} item={item} />
             ))}
           </div>
@@ -232,7 +211,7 @@ export default function NewsPage() {
       )}
 
       {/* News Sections */}
-      <div className="max-w-7xl mx-auto px-4 pb-16">
+      <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         {news.length === 0 && !featuredNews ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -248,12 +227,29 @@ export default function NewsPage() {
             </Link>
           </div>
         ) : (
-          <>
-            <NewsSection title="Today" items={todayItems} />
-            <NewsSection title="This Week" items={thisWeekItems} />
-            <NewsSection title="This Month" items={thisMonthItems} />
-            <NewsSection title="Older News" items={olderItems} />
-          </>
+          olderPostsByMonth.size > 0 && (
+            <>
+              <div className="mb-6 flex items-center gap-3">
+                <h2 className="text-xl font-bold text-[#002E5D]">Older Posts</h2>
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+              {Array.from(olderPostsByMonth.entries()).map(([monthKey, items]) => {
+                const [year, month] = monthKey.split("-").map(Number);
+                const monthLabel = new Date(year, month - 1, 1).toLocaleDateString("en-PH", {
+                  month: "long",
+                  year: "numeric",
+                });
+
+                return (
+                  <NewsSection
+                    key={monthKey}
+                    title={monthLabel}
+                    items={items}
+                  />
+                );
+              })}
+            </>
+          )
         )}
       </div>
     </div>

@@ -59,14 +59,13 @@ export default function UpdatesSection({
   newsLoading = false,
   newsError = null,
 }: UpdatesSectionProps) {
-  const [phTime, setPhTime] = useState<string>(() =>
-    formatPhilippineTime(new Date()),
-  );
+  const [phTime, setPhTime] = useState("");
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPhTime(formatPhilippineTime(new Date()));
-    }, 60_000);
+    const updateTime = () => setPhTime(formatPhilippineTime(new Date()));
+    updateTime();
+
+    const interval = setInterval(updateTime, 60_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -253,7 +252,7 @@ function FacebookFeed({ phTime }: FacebookFeedProps) {
       <div className="bg-[#F58220]/10 border-b border-[#F58220]/20 px-4 py-2 flex items-center gap-2">
         <span className="w-2 h-2 bg-[#F58220] rounded-full animate-pulse" />
         <p className="text-xs font-bold text-[#002E5D] uppercase tracking-wider">
-          As of {phTime}
+          As of {phTime || "..."}
         </p>
       </div>
 

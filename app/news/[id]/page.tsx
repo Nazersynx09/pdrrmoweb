@@ -69,7 +69,6 @@ export default function NewsDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="h-16 bg-[#002E5D]" />
         <div className="flex items-center justify-center h-[60vh]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#002E5D]" />
         </div>
@@ -80,7 +79,6 @@ export default function NewsDetailPage({
   if (!news) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="h-16 bg-[#002E5D]" />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">News Not Found</h2>
           <Link
@@ -187,8 +185,6 @@ export default function NewsDetailPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="h-16 bg-[#002E5D]" />
-
       <article className="max-w-4xl mx-auto px-4 py-8">
         <Link
           href="/news"

@@ -48,19 +48,32 @@ export async function POST(request: NextRequest) {
   const { title, content, featured_image, excerpt, status } = body;
   if (!title) return NextResponse.json({ success: false, error: 'Title required' }, { status: 400 });
 
-  const { data, error } = await client.from('news').insert([{
-    title,
-    slug: generateSlug(title),
-    content: content || '',
-    featured_image: featured_image || '',
-    excerpt: excerpt || content?.substring(0, 150) || '',
-    status: status || 'draft',
-    author_id: 'admin',
-    published_at: status === 'published' ? new Date().toISOString() : null,
-  }]).select().single();
+  const baseSlug = generateSlug(title) || 'news';
 
-  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, data });
+  for (let attempt = 1; attempt <= 100; attempt += 1) {
+    const suffix = attempt === 1 ? '' : `-${attempt}`;
+    const slug = `${baseSlug.slice(0, 50 - suffix.length).replace(/-+$/, '')}${suffix}`;
+    const { data, error } = await client.from('news').insert([{
+      title,
+      slug,
+      content: content || '',
+      featured_image: featured_image || '',
+      excerpt: excerpt || content?.substring(0, 150) || '',
+      status: status || 'draft',
+      author_id: 'admin',
+      published_at: status === 'published' ? new Date().toISOString() : null,
+    }]).select().single();
+
+    if (!error) return NextResponse.json({ success: true, data });
+    if (error.code !== '23505' || !error.message.includes('news_slug_key')) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json(
+    { success: false, error: 'Could not generate a unique news slug. Please try again.' },
+    { status: 409 },
+  );
 }
 
 export async function PUT(request: NextRequest) {

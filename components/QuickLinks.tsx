@@ -1,18 +1,29 @@
-import Link from "next/link";
-import { CloudRain, Activity, Shield, MapPin, Users, Phone } from "lucide-react";
+import Image from "next/image";
+import { Activity, CloudRain, Shield, type LucideIcon } from "lucide-react";
 
 interface QuickLinksProps {
   pagasaUrl?: string;
   phivolcsUrl?: string;
   ndrrmcUrl?: string;
+  noahUrl?: string;
+}
+
+interface QuickLink {
+  label: string;
+  href: string;
+  icon?: LucideIcon;
+  logo?: string;
+  color?: string;
+  hoverColor: string;
 }
 
 export default function QuickLinks({ 
   pagasaUrl = "https://www.pagasa.dost.gov.ph/",
   phivolcsUrl = "https://www.phivolcs.dost.gov.ph/",
-  ndrrmcUrl = "https://ndrrmc.gov.ph/"
+  ndrrmcUrl = "https://ndrrmc.gov.ph/",
+  noahUrl = "https://noah.up.edu.ph/"
 }: QuickLinksProps) {
-  const links = [
+  const links: QuickLink[] = [
     {
       label: "PAGASA Weather",
       href: pagasaUrl,
@@ -32,6 +43,12 @@ export default function QuickLinks({
       href: ndrrmcUrl,
       icon: Shield,
       color: "text-green-500",
+      hoverColor: "group-hover:text-[#F58220]",
+    },
+    {
+      label: "Project NOAH",
+      href: noahUrl,
+      logo: "/noahLogo.png",
       hoverColor: "group-hover:text-[#F58220]",
     },
     // {
@@ -69,9 +86,10 @@ export default function QuickLinks({
         <p className="text-center text-gray-500 mb-10">
           Access important resources and services
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
-          {links.map((link, i) => (
-           (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {links.map((link, i) => {
+            const Icon = link.icon;
+            return (
               <a
                 key={i}
                 href={link.href}
@@ -79,13 +97,23 @@ export default function QuickLinks({
                 rel="noreferrer"
                 className="flex flex-col items-center gap-2 bg-white p-4 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all group"
               >
-                <link.icon className={`w-8 h-8 ${link.color} ${link.hoverColor} transition-colors`} />
+                {link.logo ? (
+                  <Image
+                    src={link.logo}
+                    alt="Project NOAH logo"
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : Icon ? (
+                  <Icon className={`w-8 h-8 ${link.color ?? ""} ${link.hoverColor} transition-colors`} />
+                ) : null}
                 <span className="text-xs font-bold text-[#002E5D] text-center">
                   {link.label}
                 </span>
               </a>
-            )
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

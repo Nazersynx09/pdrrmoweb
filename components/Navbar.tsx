@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
-import page from "@/app/resources/page"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -35,7 +34,7 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: PointerEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsAboutOpen(false)
       }
@@ -43,8 +42,8 @@ export default function Navbar() {
         setIsMenuOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("pointerdown", handleClickOutside)
+    return () => document.removeEventListener("pointerdown", handleClickOutside)
   }, [])
 
   return (
@@ -52,13 +51,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
-  <Image src="/pdrrmoLogo.png" alt="Logo" width={40} height={40} />
-  <span className="font-bold tracking-tight hidden md:block text-sm">
-    <Link href="/" className="hover:text-[#F58220] transition">
-      PDRRMO ILOILO
-    </Link>
-  </span>
-</div>
+          <Link
+            href="/"
+            aria-label="Go to homepage"
+            onClick={() => setIsMenuOpen(false)}
+            className="flex items-center gap-2 hover:text-[#F58220] transition"
+          >
+            <Image src="/pdrrmoLogo.png" alt="PDRRMO Iloilo logo" width={40} height={40} />
+            <span className="font-bold tracking-tight hidden md:block text-sm">
+              PDRRMO ILOILO
+            </span>
+          </Link>
+        </div>
 
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-6 text-xs font-semibold uppercase tracking-wide">
@@ -126,6 +130,10 @@ export default function Navbar() {
             Emergency Contact
           </Link>
           <button
+            type="button"
+            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
             className="lg:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
@@ -136,7 +144,10 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-[#001f45] border-t border-white/10 px-4 py-4">
+        <div
+          id="mobile-navigation"
+          className="lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-y-contain bg-[#001f45] border-t border-white/10 px-4 py-4"
+        >
           <div className="flex flex-col divide-y divide-white/10">
 
             {/*Home link was missing */}
@@ -151,6 +162,7 @@ export default function Navbar() {
               {/* Mobile About Dropdown */}
                 <div className="py-3">
                   <button
+                    type="button"
                     onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
                     className="w-full flex justify-between items-center text-xs font-semibold uppercase tracking-wide hover:text-[#F58220] transition"
                   >

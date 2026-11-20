@@ -35,9 +35,31 @@ function isTargetPath(value: unknown): value is string {
   );
 }
 
+function getRequestOrigins(request: NextRequest) {
+  const origins = new Set([request.nextUrl.origin]);
+  const forwardedHost = request.headers
+    .get('x-forwarded-host')
+    ?.split(',')[0]
+    .trim();
+  const host = forwardedHost || request.headers.get('host');
+  const forwardedProtocol = request.headers
+    .get('x-forwarded-proto')
+    ?.split(',')[0]
+    .trim();
+  const protocol = (forwardedProtocol || request.nextUrl.protocol.slice(0, -1))
+    .replace(/:$/, '')
+    .toLowerCase();
+
+  if (host && (protocol === 'http' || protocol === 'https')) {
+    origins.add(`${protocol}://${host.toLowerCase()}`);
+  }
+
+  return origins;
+}
+
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin');
-  if (origin && origin !== request.nextUrl.origin) {
+  if (origin && !getRequestOrigins(request).has(origin)) {
     return NextResponse.json({ success: false, error: 'Invalid origin' }, { status: 403 });
   }
 

@@ -247,6 +247,42 @@ export default function ContentEditor({
     });
   };
 
+  const applyUppercase = (
+    blockId: string,
+    field: EditableTextField,
+  ) => {
+    const input = textInputRefs.current[getTextInputKey(blockId, field)];
+    const selection = textSelectionRef.current;
+    if (
+      !input ||
+      !selection ||
+      selection.blockId !== blockId ||
+      selection.field !== field ||
+      selection.start === selection.end
+    ) {
+      return;
+    }
+
+    const selectedText = input.value.slice(selection.start, selection.end);
+    const uppercaseText = selectedText.toUpperCase();
+    const updatedText =
+      input.value.slice(0, selection.start) +
+      uppercaseText +
+      input.value.slice(selection.end);
+    const updatedSelection = {
+      ...selection,
+      end: selection.start + uppercaseText.length,
+    };
+
+    updateTextBlock(blockId, field, updatedText);
+    textSelectionRef.current = updatedSelection;
+    setTextSelection(updatedSelection);
+    requestAnimationFrame(() => {
+      input.focus();
+      input.setSelectionRange(updatedSelection.start, updatedSelection.end);
+    });
+  };
+
   const renderTextFormattingToolbar = (
     blockId: string,
     field: EditableTextField,
@@ -261,6 +297,17 @@ export default function ContentEditor({
     return (
       <div className="flex items-center gap-1.5" aria-label="Text formatting">
         <span className="mr-1 text-xs text-gray-500">Format selection:</span>
+        <button
+          type="button"
+          aria-label="Convert selection to uppercase"
+          title="Convert selection to uppercase"
+          disabled={!hasSelection}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => applyUppercase(blockId, field)}
+          className={buttonClass}
+        >
+          UPPER
+        </button>
         <button
           type="button"
           aria-label="Bold"

@@ -26,7 +26,6 @@ export default function Carousel({
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const progressRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
   const DURATION = 4000;
   const SWIPE_THRESHOLD = 50;
 
@@ -63,16 +62,16 @@ export default function Carousel({
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.changedTouches[0].screenX;
+    touchStartX.current = e.changedTouches[0]?.clientX ?? null;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.changedTouches[0].screenX;
-  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const startX = touchStartX.current;
+    const endX = e.changedTouches[0]?.clientX;
+    touchStartX.current = null;
+    if (startX === null || endX === undefined) return;
 
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    const diff = touchStartX.current - touchEndX.current;
+    const diff = startX - endX;
     if (Math.abs(diff) > SWIPE_THRESHOLD) {
       if (diff > 0) {
         handleNextSlide();
@@ -80,8 +79,6 @@ export default function Carousel({
         handlePrevSlide();
       }
     }
-    touchStartX.current = null;
-    touchEndX.current = null;
   };
 
    useEffect(() => {
@@ -114,8 +111,8 @@ export default function Carousel({
         <div
           className="overflow-hidden relative bg-gray-900 rounded-2xl shadow-2xl aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/9]"
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          style={{ touchAction: "pan-y" }}
         >
           <div
             className="flex w-full h-full"
